@@ -3,6 +3,8 @@ git
 stow
 curl
 jq
+grub-x86_64-efi
+linux
 
 # Void/niri desktop
 niri

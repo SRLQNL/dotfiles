@@ -18,6 +18,7 @@ GNU Stow is a symlink-farm manager: files stay in this repository, while `~` rec
 - `packages`: curated Void package manifest used by bootstrap.
 - `services`: runit services that should be enabled.
 - `scripts`: bootstrap, apply and snapshot commands.
+- `system`: root-owned system config that is installed by dedicated scripts, not by Stow.
 
 ## Fresh Void install
 
@@ -42,6 +43,14 @@ To apply only part of the repo:
 ```sh
 PACKAGES="home desktop" ~/dotfiles/scripts/apply.sh
 ```
+
+## Install GRUB Customization
+
+```sh
+~/dotfiles/scripts/install-grub.sh
+```
+
+This installs the MilkGrub theme, keeps only two GRUB entries (`Void Linux` and `Void Linux (recovery mode)`), disables extra GRUB generators, and backs up the previous GRUB config under `/root/grub-backup-<timestamp>/`.
 
 ## Refresh repository from the live system
 

@@ -1,0 +1,20 @@
+#
+# Configuration file for GRUB.
+#
+GRUB_DEFAULT=0
+#GRUB_HIDDEN_TIMEOUT=0
+#GRUB_HIDDEN_TIMEOUT_QUIET=false
+GRUB_TIMEOUT=5
+GRUB_DISTRIBUTOR="Void"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 udev.log_level=3 vt.global_cursor_default=0 video=efifb:nobgrt nvidia-drm.modeset=1"
+#GRUB_TERMINAL_INPUT="console"
+#GRUB_TERMINAL_OUTPUT=console
+#GRUB_BACKGROUND=/usr/share/void-artwork/splash.png
+#GRUB_DISABLE_LINUX_UUID=true
+#GRUB_DISABLE_RECOVERY=true
+#GRUB_COLOR_NORMAL="light-blue/black"
+#GRUB_COLOR_HIGHLIGHT="light-cyan/blue"
+GRUB_GFXMODE="1920x1080x32,auto"
+GRUB_THEME="/boot/grub/themes/MilkGrub/theme.txt"
+GRUB_DISABLE_OS_PROBER=true
+GRUB_DISABLE_SUBMENU=true
