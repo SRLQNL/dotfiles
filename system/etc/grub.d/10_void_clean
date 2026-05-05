@@ -22,7 +22,7 @@ menuentry 'Void Linux' --class void --class gnu-linux --class gnu --class os {
     insmod ext2
     search --no-floppy --fs-uuid --set=root $root_uuid
     echo 'Loading Linux $version ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default
+    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default fbcon=map:1
     echo 'Loading initial ramdisk ...'
     initrd /boot/$initrd
 }
@@ -40,16 +40,4 @@ menuentry 'Void Linux (recovery mode)' --class recovery --class void --class gnu
     initrd /boot/$initrd
 }
 
-menuentry 'Void Linux (no fbcon test)' --class void --class gnu-linux --class gnu --class os {
-    load_video
-    set gfxpayload=keep
-    insmod gzio
-    insmod part_gpt
-    insmod ext2
-    search --no-floppy --fs-uuid --set=root $root_uuid
-    echo 'Loading Linux $version without framebuffer console ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default fbcon=map:1
-    echo 'Loading initial ramdisk ...'
-    initrd /boot/$initrd
-}
 EOF
