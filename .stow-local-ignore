@@ -1,0 +1,9 @@
+\.git
+\.gitignore
+README\.md
+packages
+services
+scripts
+backups
+\.stow-state
+\.stow-local-ignore

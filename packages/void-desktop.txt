@@ -1,0 +1,51 @@
+# Core bootstrap
+git
+stow
+curl
+jq
+
+# Void/niri desktop
+niri
+xwayland-satellite
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
+Waybar
+foot
+wofi
+rofi
+mako
+swayidle
+swaylock
+grim
+slurp
+wl-clipboard
+cliphist
+brightnessctl
+playerctl
+awww
+
+# Shell/tools
+zsh
+starship
+fastfetch
+eza
+bat
+zoxide
+btop
+mpv
+cava
+
+# UI/theme/apps used by the configs
+Thunar
+blueman
+pavucontrol
+pipewire
+wireplumber
+alsa-pipewire
+papirus-icon-theme
+noto-fonts-ttf
+noto-fonts-ttf-extra
+noto-fonts-cjk
+noto-fonts-emoji
+network-manager-applet

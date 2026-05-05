@@ -1,0 +1,6 @@
+#!/bin/bash
+flatpak-spawn --host pkill -9 picom
+sleep 0.5
+"$@"
+sleep 1
+flatpak-spawn --host picom &

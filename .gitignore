@@ -1,0 +1,23 @@
+.stow-state/
+backups/
+*.log
+
+# Runtime/editor noise
+.DS_Store
+*~
+*.swp
+*.swo
+
+# Never commit private runtime state here.
+**/.ssh/**
+**/.gnupg/**
+**/.cache/**
+**/*history*
+**/auth.json
+**/hosts.yml
+**/*cookie*
+**/*.tdb
+**/*.sqlite
+**/*.sqlite-*
+**/__pycache__/**
+**/*.pyc

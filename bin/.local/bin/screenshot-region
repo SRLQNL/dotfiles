@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+
+outdir="/storage/Screenshots"
+mkdir -p "$outdir"
+
+ts="$(date +%Y-%m-%d_%H-%M-%S)"
+outfile="$outdir/Screenshot_$ts.png"
+
+/usr/sbin/spectacle -b -n -r -o "$outfile"
+
+if [ -s "$outfile" ]; then
+  /usr/bin/wl-copy --type image/png < "$outfile"
+fi

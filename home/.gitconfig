@@ -1,0 +1,9 @@
+[user]
+	email = tapo4c902@gmail.com
+	name = SRLQNL
+[credential "https://github.com"]
+	helper = 
+	helper = !/home/srl/.local/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/home/srl/.local/bin/gh auth git-credential

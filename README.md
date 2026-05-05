@@ -1,0 +1,57 @@
+# SRL dotfiles
+
+Void Linux + niri desktop dotfiles, managed with GNU Stow.
+
+## Why Stow
+
+GNU Stow is a symlink-farm manager: files stay in this repository, while `~` receives symlinks. It is simple, transparent, easy to inspect with normal Git, and enough for this machine family.
+
+`chezmoi` is the better next step if these configs need serious per-host templates, encrypted secrets, or different generated files per laptop/desktop. For the current goal, Stow plus an idempotent bootstrap keeps the system easier to reason about.
+
+## Layout
+
+- `home`: shell, Git, Starship and basic home dotfiles.
+- `desktop`: niri, Waybar, Wofi/Rofi, Mako, Foot, Swaylock and portal config.
+- `apps`: user app configs and desktop integration settings.
+- `media`: audio configs without runtime databases or cookies.
+- `bin`: selected personal scripts from `~/.local/bin`.
+- `packages`: curated Void package manifest used by bootstrap.
+- `services`: runit services that should be enabled.
+- `scripts`: bootstrap, apply and snapshot commands.
+
+## Fresh Void install
+
+```sh
+sudo xbps-install -S git
+git clone <repo-url> ~/dotfiles
+~/dotfiles/scripts/bootstrap.sh
+```
+
+The bootstrap script installs packages from `packages/void-desktop.txt`, applies Stow packages, and enables runit services listed in `services/runit-enabled.txt`.
+
+## Apply only dotfiles
+
+```sh
+~/dotfiles/scripts/apply.sh
+```
+
+Existing real files are moved to `~/dotfiles/backups/<timestamp>/` before Stow creates symlinks. Re-running is expected to be safe.
+
+To apply only part of the repo:
+
+```sh
+PACKAGES="home desktop" ~/dotfiles/scripts/apply.sh
+```
+
+## Refresh repository from the live system
+
+```sh
+~/dotfiles/scripts/snapshot.sh
+git -C ~/dotfiles status
+```
+
+Review the diff before committing. The snapshot script intentionally excludes histories, caches, browser profiles, Claude/Codex auth state, GitHub hosts, Pulse cookies/databases, stale app configs, unused backup files and other machine-private state.
+
+## Notes for niri
+
+The current niri setup assumes two `1920x1080@144Hz` outputs named `DP-1` and `DP-2`. If a laptop uses `eDP-1` or different monitor names, edit `desktop/.config/niri/config.kdl` before applying or add a host-specific layer later.

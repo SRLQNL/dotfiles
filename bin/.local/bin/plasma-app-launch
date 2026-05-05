@@ -1,0 +1,223 @@
+#!/bin/sh
+set -eu
+
+USER_NAME="srl"
+USER_HOME="/home/srl"
+
+# Detect session: KDE or niri
+session_pid="$(pgrep -u "$USER_NAME" -n plasmashell || true)"
+if [ -z "$session_pid" ]; then
+  session_pid="$(pgrep -u "$USER_NAME" -n kwin_wayland || true)"
+fi
+IS_NIRI=0
+if [ -z "$session_pid" ]; then
+  session_pid="$(pgrep -u "$USER_NAME" -n niri || true)"
+  IS_NIRI=1
+fi
+[ -n "$session_pid" ] || exit 1
+
+read_env() {
+  tr '\0' '\n' < "/proc/$session_pid/environ" | sed -n "s/^$1=//p" | tail -n 1
+}
+
+XDG_RUNTIME_DIR="$(read_env XDG_RUNTIME_DIR)"
+DBUS_SESSION_BUS_ADDRESS="$(read_env DBUS_SESSION_BUS_ADDRESS || true)"
+
+if [ "$IS_NIRI" = "1" ]; then
+  WAYLAND_DISPLAY="$(ls "$XDG_RUNTIME_DIR"/wayland-* 2>/dev/null \
+    | grep -v '\.lock$' | grep -v 'awww' | grep -v 'niri' \
+    | head -1 | xargs basename 2>/dev/null || echo "wayland-0")"
+  DISPLAY=""
+  XDG_CURRENT_DESKTOP="niri"
+  XDG_SESSION_TYPE="wayland"
+
+  # DBUS: читаем из файла (записывается при старте сессии), потом из процессов
+  if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -f "$XDG_RUNTIME_DIR/dbus.env" ]; then
+    DBUS_SESSION_BUS_ADDRESS="$(grep '^DBUS_SESSION_BUS_ADDRESS=' "$XDG_RUNTIME_DIR/dbus.env" | cut -d= -f2-)"
+  fi
+  if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+    for _pid in $(pgrep -u "$USER_NAME"); do
+      _dbus="$(tr '\0' '\n' < "/proc/$_pid/environ" 2>/dev/null \
+        | sed -n 's/^DBUS_SESSION_BUS_ADDRESS=//p' | tail -n1)"
+      if [ -n "$_dbus" ]; then
+        DBUS_SESSION_BUS_ADDRESS="$_dbus"
+        break
+      fi
+    done
+  fi
+
+  # XDG_DATA_DIRS: нужен для flatpak
+  XDG_DATA_DIRS=""
+  for _pid in $(pgrep -u "$USER_NAME"); do
+    _val="$(tr '\0' '\n' < "/proc/$_pid/environ" 2>/dev/null \
+      | sed -n 's/^XDG_DATA_DIRS=//p' | tail -n1)"
+    if [ -n "$_val" ]; then
+      XDG_DATA_DIRS="$_val"
+      break
+    fi
+  done
+  [ -n "$XDG_DATA_DIRS" ] || XDG_DATA_DIRS="/home/srl/.local/share/flatpak/exports/share:/adata/flatpak/exports/share:/var/local/lib/flatpak/exports/share:/usr/local/share:/usr/share"
+
+else
+  WAYLAND_DISPLAY="$(read_env WAYLAND_DISPLAY)"
+  DISPLAY="$(read_env DISPLAY)"
+  XAUTHORITY="$(read_env XAUTHORITY)"
+  XDG_CURRENT_DESKTOP="$(read_env XDG_CURRENT_DESKTOP)"
+  XDG_SESSION_TYPE="$(read_env XDG_SESSION_TYPE)"
+  XDG_CONFIG_DIRS="$(read_env XDG_CONFIG_DIRS)"
+  XDG_DATA_DIRS="$(read_env XDG_DATA_DIRS)"
+  XDG_MENU_PREFIX="$(read_env XDG_MENU_PREFIX)"
+  KDE_FULL_SESSION="$(read_env KDE_FULL_SESSION)"
+  KDE_SESSION_UID="$(read_env KDE_SESSION_UID)"
+  KDE_SESSION_VERSION="$(read_env KDE_SESSION_VERSION)"
+  KDE_APPLICATIONS_AS_SCOPE="$(read_env KDE_APPLICATIONS_AS_SCOPE)"
+  QT_WAYLAND_RECONNECT="$(read_env QT_WAYLAND_RECONNECT)"
+  GTK_RC_FILES="$(read_env GTK_RC_FILES)"
+fi
+
+# Запуск нативных приложений (kitty, swaylock и т.д.)
+run_as_user() {
+  if [ "$IS_NIRI" = "1" ]; then
+    exec sudo -u "$USER_NAME" env -i \
+      HOME="$USER_HOME" \
+      USER="$USER_NAME" \
+      LOGNAME="$USER_NAME" \
+      PATH="/usr/local/bin:/usr/bin:/bin:$USER_HOME/.local/bin" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      XDG_SESSION_TYPE="wayland" \
+      XDG_CURRENT_DESKTOP="niri" \
+      NIRI_SOCKET="$(ls "$XDG_RUNTIME_DIR"/niri.*.sock 2>/dev/null | head -1)" \
+      PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native" \
+      "$@"
+  else
+    exec sudo -u "$USER_NAME" env \
+      HOME="$USER_HOME" \
+      USER="$USER_NAME" \
+      LOGNAME="$USER_NAME" \
+      PATH="/usr/local/bin:/usr/bin:/bin:$USER_HOME/.local/bin" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      DBUS_SESSION_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      DISPLAY="${DISPLAY:-}" \
+      XAUTHORITY="${XAUTHORITY:-}" \
+      XDG_SESSION_TYPE="$XDG_SESSION_TYPE" \
+      XDG_CURRENT_DESKTOP="$XDG_CURRENT_DESKTOP" \
+      XDG_CONFIG_DIRS="$XDG_CONFIG_DIRS" \
+      XDG_DATA_DIRS="$XDG_DATA_DIRS" \
+      KDE_FULL_SESSION="$KDE_FULL_SESSION" \
+      KDE_SESSION_UID="$KDE_SESSION_UID" \
+      KDE_SESSION_VERSION="$KDE_SESSION_VERSION" \
+      KDE_APPLICATIONS_AS_SCOPE="$KDE_APPLICATIONS_AS_SCOPE" \
+      QT_WAYLAND_RECONNECT="$QT_WAYLAND_RECONNECT" \
+      GTK_RC_FILES="${GTK_RC_FILES:-}" \
+      "$@"
+  fi
+}
+
+# Запуск flatpak приложений — нужны XDG_DATA_DIRS
+run_as_user_flatpak() {
+  if [ "$IS_NIRI" = "1" ]; then
+    exec sudo -u "$USER_NAME" env -i \
+      HOME="$USER_HOME" \
+      USER="$USER_NAME" \
+      LOGNAME="$USER_NAME" \
+      PATH="/usr/local/bin:/usr/bin:/bin:$USER_HOME/.local/bin" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      XDG_DATA_DIRS="$XDG_DATA_DIRS" \
+      XDG_DATA_HOME="$USER_HOME/.local/share" \
+      XDG_CONFIG_HOME="$USER_HOME/.config" \
+      DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      XDG_SESSION_TYPE="wayland" \
+      XDG_CURRENT_DESKTOP="niri" \
+      PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native" \
+      "$@"
+  else
+    run_as_user "$@"
+  fi
+}
+
+case "${1:-}" in
+  kitty)
+    NIRI_SOCK="$(ls "$XDG_RUNTIME_DIR"/niri.*.sock 2>/dev/null | head -1)"
+    KITTY_WID="$(sudo -u "$USER_NAME" env -i \
+      HOME="$USER_HOME" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      NIRI_SOCKET="$NIRI_SOCK" PATH="/usr/local/bin:/usr/bin:/bin" \
+      niri msg --json windows 2>/dev/null \
+      | python3 -c "
+import json,sys
+for w in json.load(sys.stdin):
+    if w.get('app_id')=='kitty':
+        print(w['id']); sys.exit(0)
+sys.exit(1)
+" 2>/dev/null || true)"
+    if [ -n "$KITTY_WID" ]; then
+      sudo -u "$USER_NAME" env -i \
+        HOME="$USER_HOME" XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+        NIRI_SOCKET="$NIRI_SOCK" PATH="/usr/local/bin:/usr/bin:/bin" \
+        niri msg action focus-window --id "$KITTY_WID"
+    else
+      run_as_user /usr/bin/kitty
+    fi
+    ;;
+  dolphin)  run_as_user /usr/bin/dolphin ;;
+  kde-lock|one-screen-lock)
+    if [ "$IS_NIRI" = "1" ]; then
+      run_as_user /usr/bin/swaylock
+    else
+      run_as_user /home/srl/.local/bin/one-screen-lock
+    fi ;;
+  obs)      run_as_user_flatpak flatpak run --installation=adata com.obsproject.Studio ;;
+  spectacle)
+    if [ "$IS_NIRI" = "1" ]; then
+      run_as_user sh -c 'grim -g "$(slurp)" ~/Pictures/Screenshots/screenshot-$(date +%s).png'
+    else
+      run_as_user /usr/bin/spectacle -l
+    fi ;;
+  screenshot)
+    if [ "$IS_NIRI" = "1" ]; then
+      run_as_user sh -c 'grim -g "$(slurp)" - | wl-copy'
+    else
+      run_as_user /home/srl/.local/bin/screenshot-region
+    fi ;;
+  spotify)  run_as_user_flatpak flatpak run --installation=adata com.spotify.Client ;;
+  steam)
+    # Найти DISPLAY от xwayland-satellite (сокет /tmp/.X11-unix/X* принадлежащий пользователю)
+    XDISPLAY="$(ls -la /tmp/.X11-unix/X* 2>/dev/null \
+      | awk -v u="$USER_NAME" '$3==u{print $NF}' \
+      | sed 's|.*/X|:|' | head -1)"
+    [ -n "$XDISPLAY" ] || XDISPLAY=":0"
+    # Обновить D-Bus activation environment с DISPLAY (нужно Steam)
+    sudo -u "$USER_NAME" env -i \
+      HOME="$USER_HOME" \
+      DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      DISPLAY="$XDISPLAY" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      XDG_CURRENT_DESKTOP="niri" \
+      PATH="/usr/local/bin:/usr/bin:/bin" \
+      dbus-update-activation-environment DISPLAY WAYLAND_DISPLAY XDG_CURRENT_DESKTOP 2>/dev/null || true
+    exec sudo -u "$USER_NAME" env -i \
+      HOME="$USER_HOME" USER="$USER_NAME" LOGNAME="$USER_NAME" \
+      PATH="/usr/local/bin:/usr/bin:/bin:$USER_HOME/.local/bin" \
+      XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR" \
+      XDG_DATA_DIRS="$XDG_DATA_DIRS" \
+      XDG_DATA_HOME="$USER_HOME/.local/share" \
+      XDG_CONFIG_HOME="$USER_HOME/.config" \
+      DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
+      WAYLAND_DISPLAY="$WAYLAND_DISPLAY" \
+      DISPLAY="$XDISPLAY" \
+      XDG_SESSION_TYPE="wayland" \
+      XDG_CURRENT_DESKTOP="niri" \
+      PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native" \
+      flatpak run --installation=adata com.valvesoftware.Steam
+    ;;
+  reload-wallpapers)
+    if [ "$IS_NIRI" = "0" ]; then
+      run_as_user /usr/sbin/busctl --user call org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell evaluateScript s \
+        "var ds=desktops(); for (var i=0;i<ds.length;i++){ if (ds[i].wallpaperPlugin==='org.kde.image'){ ds[i].currentConfigGroup=['Wallpaper','org.kde.image','General']; var img=ds[i].readConfig('Image'); ds[i].writeConfig('Image', ''); ds[i].writeConfig('Image', img); } }"
+    fi ;;
+  *) exit 2 ;;
+esac

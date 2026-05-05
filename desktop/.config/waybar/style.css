@@ -1,0 +1,146 @@
+@import url("/home/srl/.config/waybar/themes/main.css");
+
+* {
+    transition: none;
+    border: none;
+    border-radius: 0px;
+    font-family: "JetBrainsMono Nerd Font", "Noto Sans CJK JP", monospace;
+    font-weight: bold;
+    font-size: 13px;
+    min-height: 0px;
+}
+
+#waybar {
+    background: @base;
+    color: @text;
+}
+
+/* ── Workspaces ── */
+#workspaces {
+    margin: 0px 2px;
+    padding: 0px;
+    background: none;
+}
+
+#workspaces button {
+    font-family: "Noto Sans CJK JP", "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    padding: 2px 7px;
+    margin: 3px 1px;
+    border-radius: 6px;
+    background: none;
+    color: @subtle;
+    box-shadow: none;
+    min-width: 18px;
+}
+
+#workspaces button.active {
+    background: @color-active-workspace;
+    color: @base;
+    border-radius: 20px;
+}
+
+#workspaces button.occupied {
+    background: @highlightHigh;
+    color: @text;
+    border-radius: 20px;
+}
+
+#workspaces button.urgent {
+    background: @color-power;
+    color: @text;
+}
+
+#workspaces button.empty {
+    color: @subtle;
+    opacity: 0.5;
+}
+
+/* Hide the dynamic empty workspace niri always appends */
+#workspaces button:last-child:not(.active):not(.occupied) {
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+    opacity: 0;
+}
+
+/* ── Pill boxes: clock, player, window ── */
+#clock,
+#custom-player,
+#custom-window {
+    padding: 1px 13px;
+    margin: 4px 3px;
+    border-radius: 20px;
+    border: 1px solid @highlightHigh;
+    background: none;
+    color: @text;
+}
+
+#clock { color: @color-clock; }
+#custom-window { color: @subtle; }
+#custom-player { color: @text; opacity: 0.9; }
+
+/* ── Cava — bordered box ── */
+#custom-cava {
+    color: @color-active-workspace;
+    padding: 1px 8px;
+    margin: 4px 3px;
+    font-size: 12px;
+    letter-spacing: -2px;
+    min-width: 120px;
+    border: 1px solid @highlightHigh;
+    border-radius: 8px;
+    background: none;
+}
+
+/* ── Bluetooth / Network — standalone ── */
+#bluetooth {
+    padding: 0px 8px;
+    color: @color-network;
+}
+
+#network {
+    padding: 0px 8px;
+    color: @color-network;
+}
+
+/* ── Volume — pill box ── */
+#pulseaudio {
+    padding: 1px 13px;
+    margin: 4px 3px;
+    border-radius: 20px;
+    border: 1px solid @highlightHigh;
+    background: none;
+    color: @color-volume;
+}
+
+/* ── Brightness slider ── */
+#custom-brightness {
+    padding: 1px 10px;
+    margin: 4px 3px;
+    border-radius: 8px;
+    border: 1px solid @highlightHigh;
+    background: none;
+    color: @color-wallpaper;
+    font-size: 11px;
+    letter-spacing: -1px;
+    min-width: 110px;
+}
+
+/* ── Power — red circle ── */
+#custom-power {
+    font-size: 12px;
+    padding: 0 11px;
+    margin: 4px 8px 4px 2px;
+    border-radius: 50%;
+    background: @color-power;
+    color: @base;
+}
+
+#custom-power:hover { background: #ff5555; }
+
+/* ── Tray ── */
+#tray { padding: 0px 4px; }
+#tray > widget { padding: 0px 2px; }
