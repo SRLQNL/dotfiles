@@ -27,7 +27,7 @@ menuentry 'Void Linux' --class void --class gnu-linux --class gnu --class os {
     initrd /boot/$initrd
 }
 
-menuentry 'Void Linux (recovery mode)' --class void --class recovery --class gnu-linux --class gnu --class os {
+menuentry 'Void Linux (recovery mode)' --class recovery --class void --class gnu-linux --class gnu --class os {
     load_video
     set gfxpayload=keep
     insmod gzio
