@@ -22,7 +22,7 @@ menuentry 'Void Linux' --class void --class gnu-linux --class gnu --class os {
     insmod ext2
     search --no-floppy --fs-uuid --set=root $root_uuid
     echo 'Loading Linux $version ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default fbcon=map:1
+    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default
     echo 'Loading initial ramdisk ...'
     initrd /boot/$initrd
 }
