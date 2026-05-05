@@ -35,7 +35,7 @@ menuentry 'Void Linux (recovery mode)' --class recovery --class void --class gnu
     insmod ext2
     search --no-floppy --fs-uuid --set=root $root_uuid
     echo 'Loading Linux $version recovery ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro single
+    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline single
     echo 'Loading initial ramdisk ...'
     initrd /boot/$initrd
 }
