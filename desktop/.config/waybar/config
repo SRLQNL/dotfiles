@@ -26,19 +26,7 @@
         "on-click": "activate",
         "active-only": false,
         "all-outputs": false,
-        "format": "{icon}",
-        "format-icons": {
-            "1": "1",
-            "2": "2",
-            "3": "3",
-            "4": "4",
-            "5": "5",
-            "b1": "1",
-            "b2": "2",
-            "b3": "3",
-            "b4": "4",
-            "b5": "5"
-        }
+        "format": "{index}"
     },
     "clock": {
         "format": "󰅐  {:%H:%M:%S}",
@@ -117,6 +105,7 @@
         "exec": "~/.config/waybar/scripts/brightness.sh",
         "return-type": "json",
         "interval": 10,
+        "signal": 10,
         "exec-on-event": true,
         "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
@@ -155,19 +144,7 @@
         "on-click": "activate",
         "active-only": false,
         "all-outputs": false,
-        "format": "{icon}",
-        "format-icons": {
-            "1": "1",
-            "2": "2",
-            "3": "3",
-            "4": "4",
-            "5": "5",
-            "b1": "1",
-            "b2": "2",
-            "b3": "3",
-            "b4": "4",
-            "b5": "5"
-        }
+        "format": "{index}"
     },
     "clock": {
         "format": "󰅐  {:%H:%M:%S}",
@@ -246,6 +223,7 @@
         "exec": "~/.config/waybar/scripts/brightness.sh",
         "return-type": "json",
         "interval": 10,
+        "signal": 10,
         "exec-on-event": true,
         "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",

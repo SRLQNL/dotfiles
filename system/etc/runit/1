@@ -1,0 +1,25 @@
+#!/bin/sh
+# vim: set ts=4 sw=4 et:
+
+PATH=/usr/bin:/usr/sbin
+
+quiet_boot() {
+    [ -r /proc/cmdline ] && grep -qw quiet /proc/cmdline
+}
+
+quiet_boot && exec >/dev/null 2>&1
+
+. /etc/runit/functions
+
+msg "Welcome to Void!"
+
+[ -r /etc/rc.conf ] && . /etc/rc.conf
+
+# Start core services: one-time system tasks.
+detect_container
+for f in /etc/runit/core-services/*.sh; do
+    [ -r $f ] && . $f
+    quiet_boot && exec >/dev/null 2>&1
+done
+
+msg "Initialization complete, running stage 2..."

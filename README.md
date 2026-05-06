@@ -52,6 +52,14 @@ PACKAGES="home desktop" ~/dotfiles/scripts/apply.sh
 
 This installs the MilkGrub theme, keeps only two GRUB entries (`Void Linux` and `Void Linux (recovery mode)`), disables extra GRUB generators, and backs up the previous GRUB config under `/root/grub-backup-<timestamp>/`.
 
+## Install Quiet Runit Boot
+
+```sh
+~/dotfiles/scripts/install-runit-quiet-boot.sh
+```
+
+This installs the runit stage overrides that suppress normal boot console output when the kernel command line contains `quiet`. Recovery mode stays verbose because its GRUB entry does not use `quiet`.
+
 ## Refresh repository from the live system
 
 ```sh

@@ -24,6 +24,8 @@ STEP=5
     echo "$NEW" > "$CACHE"
 } 9>"$LOCK"
 
+pkill -RTMIN+10 waybar 2>/dev/null || true
+
 # Debounce: stamp this event; background process only applies if it's still the last one
 TOKEN=$(date +%s%N)
 echo "$TOKEN" > "$TOKEN_FILE"
