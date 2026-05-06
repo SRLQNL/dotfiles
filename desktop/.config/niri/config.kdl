@@ -159,7 +159,7 @@ layout {
 focus-ring {
         width 3
         active-color "#bd93f9"
-        inactive-color "#140a1d00"
+        inactive-color "#00000000"
     }
 
     border {
@@ -581,7 +581,6 @@ binds {
     // moving the mouse or pressing any other key.
     Mod+Shift+P { power-off-monitors; }
 	Mod+Shift+W { spawn-sh "$HOME/.config/niri/scripts/set_wallpaper.sh"; }
-	Mod+Shift+T { spawn-sh "$HOME/.config/niri/scripts/theme_setter.sh"; }
 	// Mod+Shift+B { spawn-sh "$HOME/.config/niri/scripts/profile_switcher.sh"; }
 }
 

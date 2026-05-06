@@ -1,10 +1,10 @@
-@import url("/home/srl/.config/waybar/themes/main.css");
+@import url("/home/srl/.config/waybar/themes/shado.css");
 
 * {
     transition: none;
     border: none;
     border-radius: 0px;
-    font-family: "JetBrainsMono Nerd Font", "Noto Sans CJK JP", monospace;
+    font-family: "Noto Sans Mono", "Mononoki Nerd Font Mono", "Noto Sans CJK JP", monospace;
     font-weight: bold;
     font-size: 13px;
     min-height: 0px;
@@ -23,7 +23,7 @@
 }
 
 #workspaces button {
-    font-family: "Noto Sans CJK JP", "JetBrainsMono Nerd Font", monospace;
+    font-family: "Noto Sans Mono", "Mononoki Nerd Font Mono", "Noto Sans CJK JP", monospace;
     font-size: 13px;
     padding: 2px 7px;
     margin: 3px 1px;

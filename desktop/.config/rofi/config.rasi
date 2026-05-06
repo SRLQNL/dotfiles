@@ -13,7 +13,7 @@ configuration {
 
 /*****----- Global Properties -----*****/
 //@import                          "./colors/colors.rasi"
-@import "./themes/main.rasi"
+@import "./themes/shado.rasi"
 
 * {
     border-colour:               var(selected);
