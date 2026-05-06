@@ -3,9 +3,9 @@
     "logo": {
         "type": "sixel",
         "source": "~/.config/fastfetch/assets/selected-anime-girl-fastfetch.jpg",
-        "width": 36,
-        "height": 16,
-        "preserveAspectRatio": false,
+        "width": 32,
+        "height": 18,
+        "preserveAspectRatio": true,
         "printRemaining": false,
         "padding": {
             "top": 2,
