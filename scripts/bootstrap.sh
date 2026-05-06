@@ -18,6 +18,12 @@ install_void_packages() {
     pkgs=$(sed 's/#.*//' "$PACKAGE_FILE" | awk 'NF { print $1 }')
     [ -n "$pkgs" ] || return 0
 
+    repo_pkgs=$(printf '%s\n' $pkgs | awk '/^void-repo-/ { print }')
+    if [ -n "$repo_pkgs" ]; then
+        as_root xbps-install -Sy $repo_pkgs
+        as_root xbps-install -S
+    fi
+
     as_root xbps-install -Sy $pkgs
 }
 

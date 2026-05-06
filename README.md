@@ -60,6 +60,14 @@ This installs the MilkGrub theme, keeps only two GRUB entries (`Void Linux` and 
 
 This installs the runit stage overrides that suppress normal boot console output when the kernel command line contains `quiet`. Recovery mode stays verbose because its GRUB entry does not use `quiet`.
 
+## Install Steam Homebrew
+
+```sh
+~/dotfiles/scripts/install-steam-homebrew.sh
+```
+
+This installs native Void Steam, Steam 32-bit dependencies, Steam udev rules and Millennium from Steam Client Homebrew. Steam data is linked to `/adata/Steam` by default; override with `STEAM_DATA_DIR` and `STEAM_LIBRARY_DIR` when needed.
+
 ## Refresh repository from the live system
 
 ```sh

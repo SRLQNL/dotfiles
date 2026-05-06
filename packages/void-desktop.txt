@@ -5,6 +5,9 @@ curl
 jq
 grub-x86_64-efi
 linux
+void-repo-multilib
+void-repo-nonfree
+void-repo-multilib-nonfree
 
 # Void/niri desktop
 niri
@@ -51,3 +54,12 @@ noto-fonts-ttf-extra
 noto-fonts-cjk
 noto-fonts-emoji
 network-manager-applet
+
+# Gaming
+steam
+steam-udev-rules
+nvidia-libs-32bit
+libva-32bit
+libpulseaudio-32bit
+alsa-plugins-pulseaudio-32bit
+mono
