@@ -73,4 +73,4 @@ Review the diff before committing. The snapshot script intentionally excludes hi
 
 The current niri setup assumes two `1920x1080@144Hz` outputs named `DP-1` and `DP-2`. If a laptop uses `eDP-1` or different monitor names, edit `desktop/.config/niri/config.kdl` before applying or add a host-specific layer later.
 
-Only `1..5` are declared as persistent named workspaces. The second monitor uses niri dynamic workspaces, and `workspace-cap-daemon.py` merges any workspaces above index 5 back into `1..5` when only one output remains connected.
+Only `1..5` are declared as persistent named workspaces. `workspace-cap-daemon.py` creates `b1..b5` dynamically while `DP-2` is connected, then removes those names and merges overflow workspaces back into `1..5` when only one output remains connected.

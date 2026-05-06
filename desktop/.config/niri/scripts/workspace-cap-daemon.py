@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Keep a single-output niri session capped to the first five workspaces."""
+"""Keep niri workspaces sane across one-output and two-output layouts."""
 
 import json
 import subprocess
 import time
 
 MAX_WORKSPACES = 5
+SECONDARY_OUTPUT = "DP-2"
 MERGE_PREFIXES = ("b",)
 
 
@@ -36,7 +37,53 @@ def should_unname(name):
     return isinstance(name, str) and name.startswith(MERGE_PREFIXES)
 
 
-def cleanup():
+def secondary_name(index):
+    return f"b{index}"
+
+
+def sorted_workspaces(output=None):
+    workspaces = msg("workspaces") or []
+    if output is not None:
+        workspaces = [ws for ws in workspaces if ws.get("output") == output]
+    return sorted(workspaces, key=lambda ws: ws.get("idx", 0))
+
+
+def restore_focus(focused_window_id):
+    if focused_window_id is not None:
+        action("focus-window", "--id", str(focused_window_id))
+
+
+def ensure_secondary_workspaces():
+    windows = msg("windows") or []
+    focused = next((win for win in windows if win.get("is_focused")), None)
+    focused_window_id = focused.get("id") if focused else None
+
+    for index in range(1, MAX_WORKSPACES + 1):
+        name = secondary_name(index)
+        all_workspaces = msg("workspaces") or []
+        existing = next((ws for ws in all_workspaces if ws.get("name") == name), None)
+
+        if existing:
+            if existing.get("output") != SECONDARY_OUTPUT:
+                action("move-workspace-to-monitor", "--reference", name, SECONDARY_OUTPUT)
+            action("move-workspace-to-index", "--reference", name, str(index))
+            continue
+
+        action("focus-monitor", SECONDARY_OUTPUT)
+        output_workspaces = sorted_workspaces(SECONDARY_OUTPUT)
+        candidate = next((ws for ws in output_workspaces if ws.get("idx") == index), None)
+        if candidate and candidate.get("name") is None:
+            action("set-workspace-name", "--workspace", str(index), name)
+        else:
+            action("focus-workspace", str(index))
+            action("set-workspace-name", name)
+
+        action("move-workspace-to-index", "--reference", name, str(index))
+
+    restore_focus(focused_window_id)
+
+
+def cleanup_single_output():
     outputs = msg("outputs") or {}
     if len(outputs) != 1:
         return
@@ -73,8 +120,16 @@ def cleanup():
             action("unset-workspace-name", name)
 
 
+def reconcile():
+    outputs = msg("outputs") or {}
+    if SECONDARY_OUTPUT in outputs:
+        ensure_secondary_workspaces()
+    elif len(outputs) == 1:
+        cleanup_single_output()
+
+
 def main():
-    cleanup()
+    reconcile()
     proc = subprocess.Popen(
         ["niri", "msg", "--json", "event-stream"],
         stdout=subprocess.PIPE,
@@ -101,7 +156,7 @@ def main():
         if now - last_cleanup < 0.2:
             continue
         last_cleanup = now
-        cleanup()
+        reconcile()
 
 
 if __name__ == "__main__":
