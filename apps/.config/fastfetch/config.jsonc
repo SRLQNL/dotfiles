@@ -1,11 +1,10 @@
 {
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
     "logo": {
-        "type": "sixel",
-        "source": "~/.config/fastfetch/assets/selected-anime-girl-fastfetch.jpg",
+        "type": "raw",
+        "source": "~/.config/fastfetch/assets/selected-anime-girl-fastfetch.sixel",
         "width": 32,
-        "height": 15,
-        "preserveAspectRatio": false,
+        "height": 16,
         "printRemaining": false,
         "padding": {
             "top": 2,
