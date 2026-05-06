@@ -4,7 +4,7 @@
         "type": "sixel",
         "source": "~/.config/fastfetch/assets/selected-anime-girl-fastfetch.jpg",
         "width": 32,
-        "height": 18,
+        "height": 16,
         "preserveAspectRatio": true,
         "printRemaining": false,
         "padding": {
