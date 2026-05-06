@@ -5,7 +5,7 @@
         "source": "~/.config/fastfetch/assets/selected-anime-girl-fastfetch.jpg",
         "width": 32,
         "height": 16,
-        "preserveAspectRatio": true,
+        "preserveAspectRatio": false,
         "printRemaining": false,
         "padding": {
             "top": 2,
