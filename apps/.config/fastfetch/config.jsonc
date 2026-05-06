@@ -8,7 +8,7 @@
         "preserveAspectRatio": true,
         "printRemaining": false,
         "padding": {
-            "top": 1,
+            "top": 2,
             "left": 3,
             "right": 3
         }
