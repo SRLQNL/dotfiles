@@ -4,6 +4,7 @@ set -eu
 STEAM_DATA_DIR=${STEAM_DATA_DIR:-/adata/Steam}
 STEAM_LIBRARY_DIR=${STEAM_LIBRARY_DIR:-/adata/SteamLibrary}
 STEAM_HOMEBREW_REPO=${STEAM_HOMEBREW_REPO:-SteamClientHomebrew/Millennium}
+STEAM_HOMEBREW_VERSION=${STEAM_HOMEBREW_VERSION:-3.0.0-beta.24}
 
 as_root() {
     if [ "$(id -u)" -eq 0 ]; then
@@ -26,6 +27,7 @@ install_void_steam() {
     as_root xbps-install -Sy \
         steam steam-udev-rules \
         nvidia-libs-32bit libva-32bit \
+        libssl3-32bit openssl-32bit \
         libpulseaudio-32bit alsa-plugins-pulseaudio-32bit \
         mono
 }
@@ -60,17 +62,7 @@ patch_library_paths() {
 
 install_millennium() {
     target=linux-x86_64
-    api="https://api.github.com/repos/$STEAM_HOMEBREW_REPO/releases"
-    tag=$(curl -fsSL -H 'Accept: application/vnd.github.v3+json' "$api?per_page=100" \
-        | jq -r '.[] | select(.prerelease == false) | .tag_name' \
-        | sed -n '1p')
-
-    [ -n "$tag" ] && [ "$tag" != "null" ] || {
-        printf 'could not resolve Millennium release\n' >&2
-        exit 1
-    }
-
-    version=${tag#v}
+    version=${STEAM_HOMEBREW_VERSION#v}
     base="https://github.com/$STEAM_HOMEBREW_REPO/releases/download/v$version"
     name="millennium-v$version-$target.tar.gz"
     work=$(mktemp -d)
@@ -89,8 +81,12 @@ install_millennium() {
     as_root chmod +x /usr/lib/millennium/libmillennium_luavm_x86 2>/dev/null || true
 
     if [ -d "$HOME/.steam/steam/ubuntu12_32" ]; then
-        ln -sf /usr/lib/millennium/libmillennium_bootstrap_86x.so \
-            "$HOME/.steam/steam/ubuntu12_32/libXtst.so.6"
+        if [ -r /usr/lib/millennium/libmillennium_bootstrap_x86.so ]; then
+            hook=/usr/lib/millennium/libmillennium_bootstrap_x86.so
+        else
+            hook=/usr/lib/millennium/libmillennium_bootstrap_86x.so
+        fi
+        ln -sf "$hook" "$HOME/.steam/steam/ubuntu12_32/libXtst.so.6"
     fi
 }
 

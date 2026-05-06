@@ -66,7 +66,7 @@ This installs the runit stage overrides that suppress normal boot console output
 ~/dotfiles/scripts/install-steam-homebrew.sh
 ```
 
-This installs native Void Steam, Steam 32-bit dependencies, Steam udev rules and Millennium from Steam Client Homebrew. Steam data is linked to `/adata/Steam` by default; override with `STEAM_DATA_DIR` and `STEAM_LIBRARY_DIR` when needed.
+This installs native Void Steam, Steam 32-bit dependencies, Steam udev rules and Millennium from Steam Client Homebrew. Steam data is linked to `/adata/Steam` by default; override with `STEAM_DATA_DIR` and `STEAM_LIBRARY_DIR` when needed. Millennium is pinned to `3.0.0-beta.24` because the current stable Linux package ships a 32-bit `hhx64` hook.
 
 ## Refresh repository from the live system
 

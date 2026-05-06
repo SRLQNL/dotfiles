@@ -60,6 +60,8 @@ steam
 steam-udev-rules
 nvidia-libs-32bit
 libva-32bit
+libssl3-32bit
+openssl-32bit
 libpulseaudio-32bit
 alsa-plugins-pulseaudio-32bit
 mono
