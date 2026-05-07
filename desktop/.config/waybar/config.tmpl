@@ -114,7 +114,13 @@
     },
     "custom/monitors-off": {
         "format": "󰍹",
-        "on-click": "~/.config/waybar/scripts/monitors-menu.sh",
+        "menu": "on-click",
+        "menu-file": "~/.config/waybar/monitors-menu.xml",
+        "menu-actions": {
+            "all-off":     "niri msg action power-off-monitors",
+            "primary-off": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
+            "secondary-off": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off"
+        },
         "tooltip": false
     },
     "custom/power": {
@@ -238,7 +244,13 @@
     },
     "custom/monitors-off": {
         "format": "󰍹",
-        "on-click": "~/.config/waybar/scripts/monitors-menu.sh",
+        "menu": "on-click",
+        "menu-file": "~/.config/waybar/monitors-menu.xml",
+        "menu-actions": {
+            "all-off":     "niri msg action power-off-monitors",
+            "primary-off": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
+            "secondary-off": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off"
+        },
         "tooltip": false
     },
     "custom/power": {
