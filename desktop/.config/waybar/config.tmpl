@@ -17,7 +17,6 @@
         "custom/cava",
         "custom/monitor-all",
         "custom/monitor-primary",
-        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -117,17 +116,14 @@
     "custom/monitor-all": {
         "format": "󰍹",
         "on-click": "niri msg action power-off-monitors",
-        "tooltip-format": "Выключить все мониторы"
+        "tooltip-format": "Выключить все  •  пробуждение: любое движение мышью"
     },
     "custom/monitor-primary": {
-        "format": "${NIRI_PRIMARY_OUTPUT}",
-        "on-click": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
-        "tooltip-format": "Выключить ${NIRI_PRIMARY_OUTPUT}"
-    },
-    "custom/monitor-secondary": {
-        "format": "${NIRI_SECONDARY_OUTPUT}",
-        "on-click": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off",
-        "tooltip-format": "Выключить ${NIRI_SECONDARY_OUTPUT}"
+        "exec": "~/.config/waybar/scripts/monitor-primary.sh",
+        "return-type": "json",
+        "interval": 3,
+        "on-click": "~/.config/waybar/scripts/monitor-primary.sh toggle",
+        "tooltip": true
     },
     "custom/power": {
         "format": "⏻",
@@ -153,7 +149,6 @@
         "custom/cava",
         "custom/monitor-all",
         "custom/monitor-primary",
-        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -253,17 +248,14 @@
     "custom/monitor-all": {
         "format": "󰍹",
         "on-click": "niri msg action power-off-monitors",
-        "tooltip-format": "Выключить все мониторы"
+        "tooltip-format": "Выключить все  •  пробуждение: любое движение мышью"
     },
     "custom/monitor-primary": {
-        "format": "${NIRI_PRIMARY_OUTPUT}",
-        "on-click": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
-        "tooltip-format": "Выключить ${NIRI_PRIMARY_OUTPUT}"
-    },
-    "custom/monitor-secondary": {
-        "format": "${NIRI_SECONDARY_OUTPUT}",
-        "on-click": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off",
-        "tooltip-format": "Выключить ${NIRI_SECONDARY_OUTPUT}"
+        "exec": "~/.config/waybar/scripts/monitor-primary.sh",
+        "return-type": "json",
+        "interval": 3,
+        "on-click": "~/.config/waybar/scripts/monitor-primary.sh toggle",
+        "tooltip": true
     },
     "custom/power": {
         "format": "⏻",

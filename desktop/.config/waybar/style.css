@@ -131,8 +131,7 @@
 
 /* ── Monitor power — grouped pill ── */
 #custom-monitor-all,
-#custom-monitor-primary,
-#custom-monitor-secondary {
+#custom-monitor-primary {
     padding: 1px 9px;
     margin: 4px 0px;
     background: none;
@@ -148,20 +147,19 @@
 }
 
 #custom-monitor-primary {
-    border-radius: 0;
-    border-right: none;
-}
-
-#custom-monitor-secondary {
     border-radius: 0 20px 20px 0;
     margin-right: 3px;
 }
 
 #custom-monitor-all:hover,
-#custom-monitor-primary:hover,
-#custom-monitor-secondary:hover {
+#custom-monitor-primary:hover {
     background: @highlightLow;
     color: @text;
+}
+
+#custom-monitor-primary.off {
+    color: @subtle;
+    opacity: 0.5;
 }
 
 /* ── Power — red circle ── */
