@@ -68,14 +68,6 @@ This installs the runit stage overrides that suppress normal boot console output
 
 This installs the always-on SRL power profile: `intel_pstate` uses `powersave` with `balance_performance`, turbo stays enabled, CPU performance range remains `15..100%`, NVIDIA persistence is enabled, and the RTX 3070 Ti power limit is capped at `275W`.
 
-## Install Keyd Bindings
-
-```sh
-~/dotfiles/scripts/install-keyd.sh
-```
-
-This installs the low-level `keyd` binding that runs the niri launcher on `Win+D`, even when an XWayland game grabs keyboard shortcuts.
-
 ## Install Steam Homebrew
 
 ```sh
