@@ -24,12 +24,11 @@ copy_path "$HOME/.hushlogin" "$DOTFILES_DIR/home/.hushlogin"
 copy_path "$HOME/.config/starship.toml" "$DOTFILES_DIR/home/.config/starship.toml"
 copy_path "$HOME/.config/git" "$DOTFILES_DIR/home/.config/git"
 
-for d in niri waybar wofi rofi mako foot swaylock xdg-desktop-portal xsettingsd autostart; do
+for d in niri waybar wofi mako foot swaylock xdg-desktop-portal xsettingsd autostart; do
     copy_path "$HOME/.config/$d" "$DOTFILES_DIR/desktop/.config/$d"
 done
 find "$DOTFILES_DIR/desktop/.config/niri" -maxdepth 1 -type f \( -name '*backup-*' -o -name '*before-*' -o -name 'last_wallpaper*.txt' \) -delete 2>/dev/null || true
 find "$DOTFILES_DIR/desktop/.config/foot" -maxdepth 1 -type f -name '*.before-*' -delete 2>/dev/null || true
-rm -f "$DOTFILES_DIR/desktop/.config/rofi/backup.rasi"
 rm -f "$DOTFILES_DIR/desktop/.config/waybar/save"
 rm -f "$DOTFILES_DIR/desktop/.config/waybar/modules.json"
 rm -f "$DOTFILES_DIR/desktop/.config/autostart/easyeffects.desktop"
@@ -55,7 +54,7 @@ done
 find "$DOTFILES_DIR/media/.config/pulse" \( -type f -o -type l \) \( -name '*.tdb' -o -name 'cookie' -o -name '*-runtime' -o -name '*-default-sink' -o -name '*-default-source' -o -name '*-stream-volumes.tdb' -o -name '*-device-volumes.tdb' -o -name '*-card-database.tdb' \) -delete 2>/dev/null || true
 
 mkdir -p "$DOTFILES_DIR/bin/.local/bin"
-for f in game-launch one-screen-lock plasma-app-launch restore-second-monitor-after-unlock screenshot-region thunar-open-root-here thunar-open-terminal-here; do
+for f in thunar-open-root-here thunar-open-terminal-here; do
     copy_path "$HOME/.local/bin/$f" "$DOTFILES_DIR/bin/.local/bin/$f"
 done
 

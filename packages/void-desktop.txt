@@ -19,7 +19,6 @@ Waybar
 foot
 wofi
 fuzzel
-rofi
 mako
 swayidle
 swaylock
@@ -58,14 +57,5 @@ noto-fonts-cjk
 noto-fonts-emoji
 network-manager-applet
 
-# Gaming
-steam
-steam-udev-rules
-nvidia-libs-32bit
-vulkan-loader-32bit
-libva-32bit
-libssl3-32bit
-openssl-32bit
-libpulseaudio-32bit
-alsa-plugins-pulseaudio-32bit
-mono
+# Gaming — see packages/void-gaming.txt and packages/void-nvidia.txt
+# (kept here as legacy reference; install.sh uses split files)

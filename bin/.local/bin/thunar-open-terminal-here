@@ -4,4 +4,4 @@ target="$1"
 [ -n "$target" ] || target="$PWD"
 [ -d "$target" ] || target="$(dirname "$target")"
 
-exec /usr/sbin/kitty --directory="$target"
+exec /usr/bin/foot --working-directory="$target"
