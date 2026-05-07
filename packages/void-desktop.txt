@@ -40,6 +40,8 @@ zoxide
 btop
 mpv
 cava
+lm_sensors
+thermald
 
 # UI/theme/apps used by the configs
 Thunar

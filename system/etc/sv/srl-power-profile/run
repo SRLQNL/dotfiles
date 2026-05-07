@@ -1,0 +1,65 @@
+#!/bin/sh
+exec 2>&1
+
+CPU_GOVERNOR=${CPU_GOVERNOR:-powersave}
+CPU_EPP=${CPU_EPP:-balance_performance}
+GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-285}
+
+write_if_supported() {
+    file=$1
+    value=$2
+
+    [ -w "$file" ] || return 0
+
+    if [ "${file##*/}" = "scaling_governor" ] && [ -r "${file%/*}/scaling_available_governors" ]; then
+        grep -qw -- "$value" "${file%/*}/scaling_available_governors" || return 0
+    fi
+
+    if [ "${file##*/}" = "energy_performance_preference" ] && [ -r "${file%/*}/energy_performance_available_preferences" ]; then
+        grep -qw -- "$value" "${file%/*}/energy_performance_available_preferences" || return 0
+    fi
+
+    printf '%s\n' "$value" > "$file" || true
+}
+
+apply_cpu_profile() {
+    [ -w /sys/devices/system/cpu/intel_pstate/no_turbo ] &&
+        printf '0\n' > /sys/devices/system/cpu/intel_pstate/no_turbo
+
+    [ -w /sys/devices/system/cpu/intel_pstate/min_perf_pct ] &&
+        printf '15\n' > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+
+    [ -w /sys/devices/system/cpu/intel_pstate/max_perf_pct ] &&
+        printf '100\n' > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+
+    for governor in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        [ -e "$governor" ] || continue
+        write_if_supported "$governor" "$CPU_GOVERNOR"
+    done
+
+    for epp in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
+        [ -e "$epp" ] || continue
+        write_if_supported "$epp" "$CPU_EPP"
+    done
+}
+
+apply_nvidia_profile() {
+    command -v nvidia-smi >/dev/null 2>&1 || return 0
+
+    i=0
+    while [ "$i" -lt 30 ]; do
+        if nvidia-smi >/dev/null 2>&1; then
+            nvidia-smi -pm 1 >/dev/null 2>&1 || true
+            nvidia-smi -pl "$GPU_POWER_LIMIT" >/dev/null 2>&1 || true
+            return 0
+        fi
+
+        i=$((i + 1))
+        sleep 1
+    done
+}
+
+apply_cpu_profile
+apply_nvidia_profile
+
+exec sleep infinity

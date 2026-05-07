@@ -28,7 +28,7 @@ git clone <repo-url> ~/dotfiles
 ~/dotfiles/scripts/bootstrap.sh
 ```
 
-The bootstrap script installs packages from `packages/void-desktop.txt`, applies Stow packages, and enables runit services listed in `services/runit-enabled.txt`.
+The bootstrap script installs packages from `packages/void-desktop.txt`, applies Stow packages, installs the SRL power profile, and enables runit services listed in `services/runit-enabled.txt`.
 
 ## Apply only dotfiles
 
@@ -59,6 +59,14 @@ This installs the MilkGrub theme, keeps only two GRUB entries (`Void Linux` and 
 ```
 
 This installs the runit stage overrides that suppress normal boot console output when the kernel command line contains `quiet`. Recovery mode stays verbose because its GRUB entry does not use `quiet`.
+
+## Install Power Profile
+
+```sh
+~/dotfiles/scripts/install-power-profile.sh
+```
+
+This installs the always-on SRL power profile: `intel_pstate` uses `powersave` with `balance_performance`, turbo stays enabled, CPU performance range remains `15..100%`, NVIDIA persistence is enabled, and the RTX 3070 Ti power limit is capped at `285W`.
 
 ## Install Steam Homebrew
 
