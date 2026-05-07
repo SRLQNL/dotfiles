@@ -335,8 +335,8 @@ binds {
     Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "/usr/bin/foot"; }
     Mod+E hotkey-overlay-title="File Manager: Thunar" { spawn "/usr/bin/Thunar"; }
     Mod+L hotkey-overlay-title="Lock the Screen" { spawn-sh "$HOME/.config/niri/scripts/lock.sh"; }
-    Mod+D repeat=false allow-inhibiting=false hotkey-overlay-title="Run an Application: fuzzel" { spawn-sh "pkill -x fuzzel || /usr/bin/fuzzel"; }
-    Mod+V hotkey-overlay-title="Clipboard History" { spawn-sh "pkill -x wofi || cliphist list | wofi --dmenu -p 'Clipboard' | cliphist decode | wl-copy"; }
+    Mod+D repeat=false allow-inhibiting=false hotkey-overlay-title="Run an Application: fuzzel" { spawn-sh "$HOME/.config/niri/scripts/fuzzel-menu.sh launcher"; }
+    Mod+V repeat=false allow-inhibiting=false hotkey-overlay-title="Clipboard History" { spawn-sh "$HOME/.config/niri/scripts/fuzzel-menu.sh clipboard"; }
     // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
     // Note: the entire command goes as a single argument. It's passed verbatim to `sh -c`.
     // For example, this is a standard bind to toggle the screen reader (orca).
