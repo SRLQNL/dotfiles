@@ -29,6 +29,7 @@ cliphist
 brightnessctl
 playerctl
 awww
+keyd
 
 # Shell/tools
 zsh

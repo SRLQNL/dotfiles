@@ -53,6 +53,7 @@ install_oh_my_zsh() {
 install_void_packages
 install_oh_my_zsh
 "$DOTFILES_DIR/scripts/apply.sh"
+"$DOTFILES_DIR/scripts/install-keyd.sh"
 "$DOTFILES_DIR/scripts/install-power-profile.sh"
 enable_runit_services
 
