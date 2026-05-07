@@ -15,6 +15,7 @@
     ],
     "modules-right": [
         "custom/cava",
+        "custom/monitors-off",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -110,6 +111,11 @@
         "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
+    },
+    "custom/monitors-off": {
+        "format": "󰍹",
+        "on-click": "niri msg action power-off-monitors",
+        "tooltip": false
     },
     "custom/power": {
         "format": "⏻",
@@ -133,6 +139,7 @@
     ],
     "modules-right": [
         "custom/cava",
+        "custom/monitors-off",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -228,6 +235,11 @@
         "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
+    },
+    "custom/monitors-off": {
+        "format": "󰍹",
+        "on-click": "niri msg action power-off-monitors",
+        "tooltip": false
     },
     "custom/power": {
         "format": "⏻",
