@@ -1,0 +1,238 @@
+[
+{
+    "output": "${NIRI_PRIMARY_OUTPUT}",
+    "layer": "top",
+    "position": "top",
+    "height": 38,
+    "reload_style_on_change": true,
+    "modules-left": [
+        "niri/workspaces",
+        "clock",
+        "custom/player"
+    ],
+    "modules-center": [
+        "custom/window"
+    ],
+    "modules-right": [
+        "custom/cava",
+        "custom/brightness",
+        "bluetooth",
+        "network",
+        "pulseaudio",
+        "custom/power"
+    ],
+    "niri/workspaces": {
+        "disable-scroll": false,
+        "on-click": "activate",
+        "active-only": false,
+        "all-outputs": false,
+        "format": "{index}"
+    },
+    "clock": {
+        "format": "󰅐  {:%H:%M:%S}",
+        "format-alt": "󰅐  {:%A, %B %d, %Y (%R:%S)}",
+        "interval": 1,
+        "tooltip-format": "<span>{calendar}</span>",
+        "calendar": {
+            "mode": "month",
+            "on-click-right": "mode",
+            "format": {
+                "days": "<span color='#c6d7d8'><b>{}</b></span>",
+                "weekdays": "<span color='#54A4B0'><b>{}</b></span>",
+                "today": "<span color='#fcb167'><b>{}</b></span>"
+            }
+        },
+        "actions": {
+            "on-click": "mode",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
+    },
+    "custom/player": {
+        "exec": "~/.config/waybar/scripts/cider.sh",
+        "return-type": "json",
+        "interval": 2,
+        "on-click": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') play-pause",
+        "on-click-right": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') next",
+        "tooltip": true,
+        "max-length": 40,
+        "format": " {}"
+    },
+    "custom/window": {
+        "exec": "~/.config/waybar/scripts/window.sh",
+        "interval": 1,
+        "format": "{}",
+        "tooltip": false
+    },
+    "custom/cava": {
+        "exec": "~/.config/waybar/scripts/cava.sh",
+        "format": "{}",
+        "tooltip": false
+    },
+    "bluetooth": {
+        "on-click": "blueman-manager",
+        "format": "󰂯 {status}",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "tooltip-format": "{controller_alias}\n{num_connections} connected",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}"
+    },
+    "network": {
+        "family": "ipv4",
+        "format": "⚠",
+        "format-wifi": "󰤨 {essid}",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "⚠",
+        "tooltip": true,
+        "tooltip-format": "{ifname}: {ipaddr}"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-icons": [
+            "󰕿",
+            "󰖀",
+            "󰕾"
+        ],
+        "format-muted": "󰝟",
+        "tooltip-format": "{volume}% — {desc}",
+        "on-click": "pavucontrol",
+        "disable-scroll": true,
+        "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5% && sh -c 'v=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP \"\\d+(?=%)\" | head -1); [ \"$v\" -gt 100 ] && pactl set-sink-volume @DEFAULT_SINK@ 100%'",
+        "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+    },
+    "custom/brightness": {
+        "exec": "~/.config/waybar/scripts/brightness.sh",
+        "return-type": "json",
+        "interval": 10,
+        "signal": 10,
+        "exec-on-event": true,
+        "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
+        "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
+        "tooltip": true
+    },
+    "custom/power": {
+        "format": "⏻",
+        "on-click": "~/.config/niri/scripts/power-menu.sh",
+        "tooltip": false
+    }
+},
+{
+    "output": "${NIRI_SECONDARY_OUTPUT}",
+    "layer": "top",
+    "position": "top",
+    "height": 38,
+    "reload_style_on_change": true,
+    "modules-left": [
+        "niri/workspaces",
+        "clock",
+        "custom/player"
+    ],
+    "modules-center": [
+        "custom/window"
+    ],
+    "modules-right": [
+        "custom/cava",
+        "custom/brightness",
+        "bluetooth",
+        "network",
+        "pulseaudio",
+        "custom/power"
+    ],
+    "niri/workspaces": {
+        "disable-scroll": false,
+        "on-click": "activate",
+        "active-only": false,
+        "all-outputs": false,
+        "format": "{index}"
+    },
+    "clock": {
+        "format": "󰅐  {:%H:%M:%S}",
+        "format-alt": "󰅐  {:%A, %B %d, %Y (%R:%S)}",
+        "interval": 1,
+        "tooltip-format": "<span>{calendar}</span>",
+        "calendar": {
+            "mode": "month",
+            "on-click-right": "mode",
+            "format": {
+                "days": "<span color='#c6d7d8'><b>{}</b></span>",
+                "weekdays": "<span color='#54A4B0'><b>{}</b></span>",
+                "today": "<span color='#fcb167'><b>{}</b></span>"
+            }
+        },
+        "actions": {
+            "on-click": "mode",
+            "on-scroll-up": "shift_up",
+            "on-scroll-down": "shift_down"
+        }
+    },
+    "custom/player": {
+        "exec": "~/.config/waybar/scripts/cider.sh",
+        "return-type": "json",
+        "interval": 2,
+        "on-click": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') play-pause",
+        "on-click-right": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') next",
+        "tooltip": true,
+        "max-length": 40,
+        "format": " {}"
+    },
+    "custom/window": {
+        "exec": "~/.config/waybar/scripts/window.sh",
+        "interval": 1,
+        "format": "{}",
+        "tooltip": false
+    },
+    "custom/cava": {
+        "exec": "~/.config/waybar/scripts/cava.sh",
+        "format": "{}",
+        "tooltip": false
+    },
+    "bluetooth": {
+        "on-click": "blueman-manager",
+        "format": "󰂯 {status}",
+        "format-disabled": "󰂲",
+        "format-connected": "󰂱 {device_alias}",
+        "tooltip-format": "{controller_alias}\n{num_connections} connected",
+        "tooltip-format-connected": "{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}"
+    },
+    "network": {
+        "family": "ipv4",
+        "format": "⚠",
+        "format-wifi": "󰤨 {essid}",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "⚠",
+        "tooltip": true,
+        "tooltip-format": "{ifname}: {ipaddr}"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-icons": [
+            "󰕿",
+            "󰖀",
+            "󰕾"
+        ],
+        "format-muted": "󰝟",
+        "tooltip-format": "{volume}% — {desc}",
+        "on-click": "pavucontrol",
+        "disable-scroll": true,
+        "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5% && sh -c 'v=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP \"\\d+(?=%)\" | head -1); [ \"$v\" -gt 100 ] && pactl set-sink-volume @DEFAULT_SINK@ 100%'",
+        "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+    },
+    "custom/brightness": {
+        "exec": "~/.config/waybar/scripts/brightness.sh",
+        "return-type": "json",
+        "interval": 10,
+        "signal": 10,
+        "exec-on-event": true,
+        "on-scroll-up": "~/.config/waybar/scripts/brightness-set.sh UP",
+        "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
+        "tooltip": true
+    },
+    "custom/power": {
+        "format": "⏻",
+        "on-click": "~/.config/niri/scripts/power-menu.sh",
+        "tooltip": false
+    }
+}
+]

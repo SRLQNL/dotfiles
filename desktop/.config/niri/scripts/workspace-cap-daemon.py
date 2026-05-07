@@ -2,11 +2,12 @@
 """Keep niri workspaces sane across one-output and two-output layouts."""
 
 import json
+import os
 import subprocess
 import time
 
 MAX_WORKSPACES = 5
-SECONDARY_OUTPUT = "DP-2"
+SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
 
 
@@ -122,7 +123,7 @@ def cleanup_single_output():
 
 def reconcile():
     outputs = msg("outputs") or {}
-    if SECONDARY_OUTPUT in outputs:
+    if SECONDARY_OUTPUT and SECONDARY_OUTPUT in outputs:
         ensure_secondary_workspaces()
     elif len(outputs) == 1:
         cleanup_single_output()

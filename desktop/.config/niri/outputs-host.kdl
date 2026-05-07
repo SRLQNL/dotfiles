@@ -1,0 +1,3 @@
+// Host-specific output and workspace configuration.
+// This file is overwritten by install.sh from hosts/<hostname>/niri-outputs.kdl.
+// On a new machine, run install.sh to populate this file.
