@@ -1,92 +1,223 @@
-# SRL dotfiles
+# dotfiles
 
-Void Linux + niri desktop dotfiles, managed with GNU Stow.
+Portable dotfiles for Void Linux + niri Wayland desktop.
+Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
-## Why Stow
-
-GNU Stow is a symlink-farm manager: files stay in this repository, while `~` receives symlinks. It is simple, transparent, easy to inspect with normal Git, and enough for this machine family.
-
-`chezmoi` is the better next step if these configs need serious per-host templates, encrypted secrets, or different generated files per laptop/desktop. For the current goal, Stow plus an idempotent bootstrap keeps the system easier to reason about.
-
-## Layout
-
-- `home`: shell, Git, Starship and basic home dotfiles.
-- `desktop`: niri, Waybar, Wofi/Rofi, Mako, Foot, Swaylock and portal config.
-- `apps`: user app configs and desktop integration settings.
-- `media`: audio configs without runtime databases or cookies.
-- `bin`: selected personal scripts from `~/.local/bin`.
-- `packages`: curated Void package manifest used by bootstrap.
-- `services`: runit services that should be enabled.
-- `scripts`: bootstrap, apply and snapshot commands.
-- `system`: root-owned system config that is installed by dedicated scripts, not by Stow.
-
-## Fresh Void install
+## Quick start (new Void machine)
 
 ```sh
+# 1. Clone
 sudo xbps-install -S git
 git clone <repo-url> ~/dotfiles
-~/dotfiles/scripts/bootstrap.sh
+cd ~/dotfiles
+
+# 2. Create host config (see hosts/example/host.env)
+cp hosts/example/host.env hosts/$(hostname -s)/host.env
+$EDITOR hosts/$(hostname -s)/host.env   # set monitor names, profiles, etc.
+
+# 3. Bootstrap
+./install.sh --yes
 ```
 
-The bootstrap script installs packages from `packages/void-desktop.txt`, applies Stow packages, installs the SRL power profile, and enables runit services listed in `services/runit-enabled.txt`.
+Preview without making changes:
+```sh
+./install.sh --dry-run
+```
 
-## Apply only dotfiles
+---
+
+## Structure
+
+```
+dotfiles/
+├── install.sh          # Main bootstrap: hardware detection, profiles, stow, validation
+├── profiles/           # Composable feature profiles
+│   ├── base.env        # Always loaded
+│   ├── desktop-nvidia.env
+│   ├── laptop.env
+│   ├── steam.env
+│   ├── grub-themed.env
+│   └── power-profile.env
+├── hosts/              # Per-host overrides
+│   ├── example/        # Template — copy and edit for your machine
+│   └── desktop-srl/    # Reference: NVIDIA desktop with dual DP monitors
+│
+├── home/               # Shell, git, starship
+├── desktop/            # niri, waybar, foot, mako, fuzzel, rofi, swaylock
+├── apps/               # GTK, btop, mpv, fontconfig, etc.
+├── media/              # PulseAudio/PipeWire configs
+├── bin/                # ~/.local/bin scripts
+│
+├── packages/
+│   ├── void-base.txt   # Base packages for all machines
+│   ├── void-nvidia.txt # 32-bit NVIDIA/Vulkan libs (Steam + Proton)
+│   ├── void-gaming.txt # Steam, mono
+│   └── void-laptop.txt # Battery/power tools for laptops
+│
+├── services/           # runit-enabled.txt — services to symlink into /var/service
+├── scripts/            # Installation helpers (stow apply, GRUB, power profile, Steam)
+└── system/             # Root-level configs installed by scripts (GRUB, /etc/environment)
+```
+
+---
+
+## Profiles
+
+Profiles are composable. Set them in `hosts/<hostname>/host.env`:
 
 ```sh
-~/dotfiles/scripts/apply.sh
+PROFILES="desktop-nvidia steam grub-themed power-profile"
 ```
 
-Existing real files are moved to `~/dotfiles/backups/<timestamp>/` before Stow creates symlinks. Re-running is expected to be safe.
+Or pass on the command line:
+```sh
+./install.sh --profiles "desktop-nvidia steam"
+```
 
-To apply only part of the repo:
+| Profile | What it does |
+|---------|-------------|
+| `base` | Always applied: base packages, stow, oh-my-zsh |
+| `desktop-nvidia` | `nvidia-drm.modeset=1`, 32-bit libs, power management |
+| `laptop` | Battery tools, power-saving CPU defaults |
+| `steam` | Steam + gaming packages, configurable data paths |
+| `grub-themed` | MilkGrub theme, GRUB display mode |
+| `power-profile` | srl-power-profile runit service (CPU/GPU power caps) |
+
+---
+
+## Adding a new host
 
 ```sh
-PACKAGES="home desktop" ~/dotfiles/scripts/apply.sh
+# 1. Copy example host config
+cp hosts/example/host.env hosts/$(hostname -s)/host.env
+
+# 2. Find monitor names (inside a running niri session)
+niri msg outputs
+
+# 3. Edit the host config with your monitor names, profiles, paths
+$EDITOR hosts/$(hostname -s)/host.env
+
+# 4. (Optional) add a niri outputs config for this host
+cp hosts/desktop-srl/niri-outputs.kdl hosts/$(hostname -s)/niri-outputs.kdl
+# Edit output names and modes — bootstrap will install it to ~/.config/niri/outputs-host.kdl
+
+# 5. Run bootstrap
+./install.sh --host $(hostname -s) --yes
 ```
 
-## Install GRUB Customization
+---
+
+## Manual component installation
 
 ```sh
-~/dotfiles/scripts/install-grub.sh
+# Apply stow only (skip packages and system)
+./install.sh --skip-packages --skip-system
+
+# Only specific stow packages
+PACKAGES="home desktop" scripts/apply.sh
+
+# GRUB theme
+scripts/install-grub.sh
+
+# Power profile runit service
+scripts/install-power-profile.sh
+
+# Steam + Millennium
+STEAM_DATA_DIR=/your/drive/Steam scripts/install-steam-homebrew.sh
+
+# Quiet runit boot (suppress console output)
+scripts/install-runit-quiet-boot.sh
+
+# Sync live system back into repo
+scripts/snapshot.sh && git -C ~/dotfiles status
 ```
 
-This installs the MilkGrub theme, keeps only two GRUB entries (`Void Linux` and `Void Linux (recovery mode)`), disables extra GRUB generators, and backs up the previous GRUB config under `/root/grub-backup-<timestamp>/`.
+---
 
-## Install Quiet Runit Boot
+## Hardware-specific notes
+
+### NVIDIA (profile: desktop-nvidia)
+
+- Adds `nvidia-drm.modeset=1` to GRUB cmdline
+- Installs 32-bit NVIDIA/Vulkan libs required for Steam Proton
+- `GPU_POWER_LIMIT` (W) is applied via `nvidia-smi` in the runit service
+- Set per-host: `GPU_POWER_LIMIT=275` for RTX 3070 Ti, `150` for weaker cards
+
+### Dual-monitor desktop (hosts/desktop-srl)
+
+Two 1920×1080@144Hz DisplayPort monitors stacked vertically:
+- `DP-1` — top, primary, workspaces 1–5
+- `DP-2` — bottom
+
+Lock behavior: top monitor disables on lock, restores on unlock.
+Configure output names via `LOCK_TOP_OUTPUT` / `LOCK_BOTTOM_OUTPUT` in `host.env`.
+
+`workspace-cap-daemon.py` creates `b1..b5` workspaces dynamically while `DP-2` is
+connected, and merges them back to `1..5` when only one output is present.
+
+### Laptop (profile: laptop)
+
+- CPU: `powersave` governor + `power` EPP
+- GPU power cap disabled
+- Extra packages: `acpi`, `tlp`, `thermald`
+
+### Steam (profile: steam)
 
 ```sh
-~/dotfiles/scripts/install-runit-quiet-boot.sh
+# host.env — override default paths
+STEAM_DATA_DIR=/adata/Steam            # desktop-srl: separate drive
+STEAM_LIBRARY_DIR=/adata/SteamLibrary
+```
+Default: `~/.local/share/Steam`.
+
+Includes Millennium patcher (pinned to `3.0.0-beta.24`) and Steam-local fontconfig
+wrapper to avoid Steam Runtime noise with newer host fontconfig files.
+
+---
+
+## Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SCREENSHOT_DIR` | `~/Pictures/Screenshots` | Where `screenshot-region` saves files |
+| `LOCK_TOP_OUTPUT` | `DP-1` | Monitor to disable during lock screen |
+| `LOCK_BOTTOM_OUTPUT` | `DP-2` | Secondary monitor for lock restore script |
+| `DOTFILES_TARGET_USER` | auto-detect | User for `plasma-app-launch` when run as root |
+| `STEAM_DATA_DIR` | `~/.local/share/Steam` | Steam data directory |
+| `STEAM_LIBRARY_DIR` | `~/.local/share/Steam/SteamLibrary` | Steam library path |
+| `GPU_POWER_LIMIT` | `150` | NVIDIA power cap in watts |
+
+---
+
+## Rollback / backup
+
+`scripts/apply.sh` backs up conflicting files before stow:
+```
+dotfiles/backups/YYYYMMDD-HHMMSS/
 ```
 
-This installs the runit stage overrides that suppress normal boot console output when the kernel command line contains `quiet`. Recovery mode stays verbose because its GRUB entry does not use `quiet`.
+GRUB backup is at `/root/grub-backup-YYYYMMDD-HHMMSS/`.
 
-## Install Power Profile
+Restore:
+```sh
+# Dotfiles backup
+cp -a ~/dotfiles/backups/20260507-120000/. ~/
+
+# GRUB
+sudo cp /root/grub-backup-*/grub.default /etc/default/grub
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+---
+
+## Validation
 
 ```sh
-~/dotfiles/scripts/install-power-profile.sh
+# Full validation (dry-run, no changes)
+./install.sh --dry-run --skip-packages --skip-stow --skip-system
+
+# Individual checks
+niri validate --config ~/.config/niri/config.kdl
+fuzzel --check-config
+sh -n scripts/bootstrap.sh
 ```
-
-This installs the always-on SRL power profile: `intel_pstate` uses `powersave` with `balance_performance`, turbo stays enabled, CPU performance range remains `15..100%`, NVIDIA persistence is enabled, and the RTX 3070 Ti power limit is capped at `275W`.
-
-## Install Steam Homebrew
-
-```sh
-~/dotfiles/scripts/install-steam-homebrew.sh
-```
-
-This installs native Void Steam, Steam 32-bit dependencies, Steam udev rules and Millennium from Steam Client Homebrew. Steam data is linked to `/adata/Steam` by default; override with `STEAM_DATA_DIR` and `STEAM_LIBRARY_DIR` when needed. The script also creates a Steam-local fontconfig wrapper to avoid Steam Runtime parsing noise from newer host fontconfig files. Millennium is pinned to `3.0.0-beta.24` because the current stable Linux package ships a 32-bit `hhx64` hook.
-
-## Refresh repository from the live system
-
-```sh
-~/dotfiles/scripts/snapshot.sh
-git -C ~/dotfiles status
-```
-
-Review the diff before committing. The snapshot script intentionally excludes histories, caches, browser profiles, Claude/Codex auth state, GitHub hosts, Pulse cookies/databases, stale app configs, unused backup files and other machine-private state.
-
-## Notes for niri
-
-The current niri setup assumes two `1920x1080@144Hz` outputs named `DP-1` and `DP-2`. If a laptop uses `eDP-1` or different monitor names, edit `desktop/.config/niri/config.kdl` before applying or add a host-specific layer later.
-
-Only `1..5` are declared as persistent named workspaces. `workspace-cap-daemon.py` creates `b1..b5` dynamically while `DP-2` is connected, then removes those names and merges overflow workspaces back into `1..5` when only one output remains connected.
