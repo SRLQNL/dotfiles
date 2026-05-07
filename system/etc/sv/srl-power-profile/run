@@ -3,7 +3,7 @@ exec 2>&1
 
 CPU_GOVERNOR=${CPU_GOVERNOR:-powersave}
 CPU_EPP=${CPU_EPP:-balance_performance}
-GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-285}
+GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-275}
 
 write_if_supported() {
     file=$1

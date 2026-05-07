@@ -66,7 +66,7 @@ This installs the runit stage overrides that suppress normal boot console output
 ~/dotfiles/scripts/install-power-profile.sh
 ```
 
-This installs the always-on SRL power profile: `intel_pstate` uses `powersave` with `balance_performance`, turbo stays enabled, CPU performance range remains `15..100%`, NVIDIA persistence is enabled, and the RTX 3070 Ti power limit is capped at `285W`.
+This installs the always-on SRL power profile: `intel_pstate` uses `powersave` with `balance_performance`, turbo stays enabled, CPU performance range remains `15..100%`, NVIDIA persistence is enabled, and the RTX 3070 Ti power limit is capped at `275W`.
 
 ## Install Steam Homebrew
 
