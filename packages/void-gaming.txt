@@ -1,0 +1,6 @@
+# Gaming packages — activate with profile: steam
+# Requires void-repo-nonfree void-repo-multilib void-repo-multilib-nonfree
+
+steam
+steam-udev-rules
+mono

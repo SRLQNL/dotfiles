@@ -1,0 +1,11 @@
+# NVIDIA packages — activate with profile: desktop-nvidia
+# Requires: void-repo-nonfree void-repo-multilib void-repo-multilib-nonfree
+
+# 32-bit compatibility libraries (needed for Steam and Proton)
+nvidia-libs-32bit
+vulkan-loader-32bit
+libva-32bit
+libssl3-32bit
+openssl-32bit
+libpulseaudio-32bit
+alsa-plugins-pulseaudio-32bit

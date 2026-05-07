@@ -1,0 +1,65 @@
+# Base packages — installed on all machines
+# For Void Linux (xbps)
+
+# Bootstrap tools
+git
+stow
+curl
+jq
+
+# Bootloader (EFI)
+grub-x86_64-efi
+linux
+
+# Void repos (enable before everything else)
+void-repo-multilib
+void-repo-nonfree
+void-repo-multilib-nonfree
+
+# niri Wayland desktop
+niri
+xwayland-satellite
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
+Waybar
+foot
+wofi
+fuzzel
+rofi
+mako
+swayidle
+swaylock
+grim
+slurp
+wl-clipboard
+cliphist
+brightnessctl
+playerctl
+awww
+
+# Shell / CLI tools
+zsh
+starship
+fastfetch
+eza
+bat
+zoxide
+btop
+mpv
+cava
+lm_sensors
+
+# UI / apps
+Thunar
+blueman
+pavucontrol
+pipewire
+wireplumber
+alsa-pipewire
+papirus-icon-theme
+noto-fonts-ttf
+noto-fonts-ttf-extra
+noto-fonts-cjk
+noto-fonts-emoji
+network-manager-applet
