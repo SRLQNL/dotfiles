@@ -26,7 +26,7 @@ install_void_steam() {
     as_root xbps-install -S
     as_root xbps-install -Sy \
         steam steam-udev-rules \
-        nvidia-libs-32bit libva-32bit \
+        nvidia-libs-32bit vulkan-loader-32bit libva-32bit \
         libssl3-32bit openssl-32bit \
         libpulseaudio-32bit alsa-plugins-pulseaudio-32bit \
         mono

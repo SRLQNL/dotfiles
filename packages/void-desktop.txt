@@ -59,6 +59,7 @@ network-manager-applet
 steam
 steam-udev-rules
 nvidia-libs-32bit
+vulkan-loader-32bit
 libva-32bit
 libssl3-32bit
 openssl-32bit
