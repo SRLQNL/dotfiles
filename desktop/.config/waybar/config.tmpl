@@ -15,8 +15,8 @@
     ],
     "modules-right": [
         "custom/cava",
-        "custom/monitor-all",
         "custom/monitor-primary",
+        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -113,16 +113,18 @@
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
     },
-    "custom/monitor-all": {
-        "format": "󰍹",
-        "on-click": "niri msg action power-off-monitors",
-        "tooltip-format": "Выключить все  •  пробуждение: любое движение мышью"
-    },
     "custom/monitor-primary": {
-        "exec": "~/.config/waybar/scripts/monitor-primary.sh",
+        "exec": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_PRIMARY_OUTPUT}",
         "return-type": "json",
         "interval": 3,
-        "on-click": "~/.config/waybar/scripts/monitor-primary.sh toggle",
+        "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_PRIMARY_OUTPUT} toggle",
+        "tooltip": true
+    },
+    "custom/monitor-secondary": {
+        "exec": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_SECONDARY_OUTPUT}",
+        "return-type": "json",
+        "interval": 3,
+        "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_SECONDARY_OUTPUT} toggle",
         "tooltip": true
     },
     "custom/power": {
@@ -147,8 +149,8 @@
     ],
     "modules-right": [
         "custom/cava",
-        "custom/monitor-all",
         "custom/monitor-primary",
+        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -245,16 +247,18 @@
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
     },
-    "custom/monitor-all": {
-        "format": "󰍹",
-        "on-click": "niri msg action power-off-monitors",
-        "tooltip-format": "Выключить все  •  пробуждение: любое движение мышью"
-    },
     "custom/monitor-primary": {
-        "exec": "~/.config/waybar/scripts/monitor-primary.sh",
+        "exec": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_PRIMARY_OUTPUT}",
         "return-type": "json",
         "interval": 3,
-        "on-click": "~/.config/waybar/scripts/monitor-primary.sh toggle",
+        "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_PRIMARY_OUTPUT} toggle",
+        "tooltip": true
+    },
+    "custom/monitor-secondary": {
+        "exec": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_SECONDARY_OUTPUT}",
+        "return-type": "json",
+        "interval": 3,
+        "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${NIRI_SECONDARY_OUTPUT} toggle",
         "tooltip": true
     },
     "custom/power": {

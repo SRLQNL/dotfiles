@@ -130,8 +130,8 @@
 }
 
 /* ── Monitor power — grouped pill ── */
-#custom-monitor-all,
-#custom-monitor-primary {
+#custom-monitor-primary,
+#custom-monitor-secondary {
     padding: 1px 9px;
     margin: 4px 0px;
     background: none;
@@ -140,24 +140,25 @@
     font-size: 11px;
 }
 
-#custom-monitor-all {
+#custom-monitor-primary {
     border-radius: 20px 0 0 20px;
     border-right: none;
     margin-left: 3px;
 }
 
-#custom-monitor-primary {
+#custom-monitor-secondary {
     border-radius: 0 20px 20px 0;
     margin-right: 3px;
 }
 
-#custom-monitor-all:hover,
-#custom-monitor-primary:hover {
+#custom-monitor-primary:hover,
+#custom-monitor-secondary:hover {
     background: @highlightLow;
     color: @text;
 }
 
-#custom-monitor-primary.off {
+#custom-monitor-primary.off,
+#custom-monitor-secondary.off {
     color: @subtle;
     opacity: 0.5;
 }
