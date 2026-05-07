@@ -289,6 +289,8 @@ apply_host_overlay() {
     if [ -f "$outputs_kdl" ]; then
         target="$HOME/.config/niri/outputs-host.kdl"
         dry "mkdir -p \"\$(dirname '$target')\""
+        # Remove symlink first so cp doesn't write through into the dotfiles placeholder
+        dry "rm -f '$target'"
         dry "cp '$outputs_kdl' '$target'"
         info "niri outputs: $target"
     fi
