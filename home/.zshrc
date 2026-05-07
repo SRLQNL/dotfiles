@@ -154,9 +154,6 @@ export DOTNET_ROOT="$HOME/.dotnet"
 export PATH="$PATH:$HOME/.dotnet:$HOME/.dotnet/tools"
 export PATH="$HOME/.local/bin:$PATH"
 
-# Re-read KWin config from the current Plasma session.
-alias rekwin='runuser -u srl -- bash -lc '\''export XDG_RUNTIME_DIR=/run/user/1000 DBUS_SESSION_BUS_ADDRESS=$(tr "\0" "\n" < /proc/$(pgrep -u srl -n kded6)/environ | sed -n "s/^DBUS_SESSION_BUS_ADDRESS=//p") WAYLAND_DISPLAY=wayland-0; gdbus call --session --dest org.kde.KWin --object-path /KWin --method org.kde.KWin.reconfigure'\'''
-
 # ── modern cli tools ──────────────────────────────────────────────────────────
 
 # eza (better ls)

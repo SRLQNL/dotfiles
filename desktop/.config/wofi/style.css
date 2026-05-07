@@ -1,4 +1,4 @@
-@import url("/home/srl/.config/wofi/themes/shado.css");
+@import url("themes/shado.css");
 
 @define-color window-bg @base;
 @define-color input-bg @surface;
