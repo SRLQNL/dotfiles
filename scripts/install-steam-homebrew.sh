@@ -39,6 +39,45 @@ setup_steam_paths() {
     ln -sfn "$STEAM_DATA_DIR" "$HOME/.steam/root"
 }
 
+setup_steam_fontconfig() {
+    fcdir="$HOME/.config/steam-fontconfig"
+    mkdir -p "$fcdir/conf.d" "$HOME/.local/bin" "$HOME/.local/share/applications"
+    rm -f "$fcdir/conf.d"/*.conf
+
+    for file in /etc/fonts/conf.d/*.conf; do
+        base=${file##*/}
+        [ "$base" = "10-scale-bitmap-fonts.conf" ] && continue
+        sed '/<description>/d' "$file" > "$fcdir/conf.d/$base"
+    done
+
+    cat > "$fcdir/fonts.conf" <<EOF
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <dir>/usr/share/fonts</dir>
+  <dir>/usr/local/share/fonts</dir>
+  <dir>$HOME/.local/share/fonts</dir>
+  <dir>$HOME/.fonts</dir>
+  <cachedir>/var/cache/fontconfig</cachedir>
+  <cachedir>$HOME/.cache/fontconfig</cachedir>
+  <include ignore_missing="yes">$fcdir/conf.d</include>
+</fontconfig>
+EOF
+
+    cat > "$HOME/.local/bin/steam" <<EOF
+#!/bin/sh
+export FONTCONFIG_FILE="\${FONTCONFIG_FILE:-$fcdir/fonts.conf}"
+exec /usr/bin/steam "\$@"
+EOF
+    chmod +x "$HOME/.local/bin/steam"
+
+    if [ -r /usr/share/applications/steam.desktop ]; then
+        cp /usr/share/applications/steam.desktop "$HOME/.local/share/applications/steam.desktop"
+        sed -i "s#Exec=/usr/bin/steam#Exec=env FONTCONFIG_FILE=$fcdir/fonts.conf /usr/bin/steam#g" \
+            "$HOME/.local/share/applications/steam.desktop"
+    fi
+}
+
 bootstrap_steam_client() {
     bootstrap=/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz
     [ -x "$STEAM_DATA_DIR/steam.sh" ] && return 0
@@ -97,6 +136,7 @@ require_cmd sha256sum
 
 install_void_steam
 setup_steam_paths
+setup_steam_fontconfig
 bootstrap_steam_client
 patch_library_paths
 install_millennium
