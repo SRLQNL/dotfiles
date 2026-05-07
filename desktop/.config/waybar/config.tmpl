@@ -15,7 +15,9 @@
     ],
     "modules-right": [
         "custom/cava",
-        "custom/monitors-off",
+        "custom/monitor-all",
+        "custom/monitor-primary",
+        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -112,16 +114,20 @@
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
     },
-    "custom/monitors-off": {
+    "custom/monitor-all": {
         "format": "󰍹",
-        "menu": "on-click",
-        "menu-file": "~/.config/waybar/monitors-menu.xml",
-        "menu-actions": {
-            "all-off":     "niri msg action power-off-monitors",
-            "primary-off": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
-            "secondary-off": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off"
-        },
-        "tooltip": false
+        "on-click": "niri msg action power-off-monitors",
+        "tooltip-format": "Выключить все мониторы"
+    },
+    "custom/monitor-primary": {
+        "format": "${NIRI_PRIMARY_OUTPUT}",
+        "on-click": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
+        "tooltip-format": "Выключить ${NIRI_PRIMARY_OUTPUT}"
+    },
+    "custom/monitor-secondary": {
+        "format": "${NIRI_SECONDARY_OUTPUT}",
+        "on-click": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off",
+        "tooltip-format": "Выключить ${NIRI_SECONDARY_OUTPUT}"
     },
     "custom/power": {
         "format": "⏻",
@@ -145,7 +151,9 @@
     ],
     "modules-right": [
         "custom/cava",
-        "custom/monitors-off",
+        "custom/monitor-all",
+        "custom/monitor-primary",
+        "custom/monitor-secondary",
         "custom/brightness",
         "bluetooth",
         "network",
@@ -242,16 +250,20 @@
         "on-scroll-down": "~/.config/waybar/scripts/brightness-set.sh DOWN",
         "tooltip": true
     },
-    "custom/monitors-off": {
+    "custom/monitor-all": {
         "format": "󰍹",
-        "menu": "on-click",
-        "menu-file": "~/.config/waybar/monitors-menu.xml",
-        "menu-actions": {
-            "all-off":     "niri msg action power-off-monitors",
-            "primary-off": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
-            "secondary-off": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off"
-        },
-        "tooltip": false
+        "on-click": "niri msg action power-off-monitors",
+        "tooltip-format": "Выключить все мониторы"
+    },
+    "custom/monitor-primary": {
+        "format": "${NIRI_PRIMARY_OUTPUT}",
+        "on-click": "wlr-randr --output ${NIRI_PRIMARY_OUTPUT} --off",
+        "tooltip-format": "Выключить ${NIRI_PRIMARY_OUTPUT}"
+    },
+    "custom/monitor-secondary": {
+        "format": "${NIRI_SECONDARY_OUTPUT}",
+        "on-click": "wlr-randr --output ${NIRI_SECONDARY_OUTPUT} --off",
+        "tooltip-format": "Выключить ${NIRI_SECONDARY_OUTPUT}"
     },
     "custom/power": {
         "format": "⏻",
