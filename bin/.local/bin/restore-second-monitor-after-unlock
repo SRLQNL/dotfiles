@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-TOP_OUTPUT="DP-1"
-BOTTOM_OUTPUT="DP-2"
+TOP_OUTPUT="${LOCK_TOP_OUTPUT:-DP-1}"
+BOTTOM_OUTPUT="${LOCK_BOTTOM_OUTPUT:-DP-2}"
 LOG_FILE="/tmp/restore-second-monitor.log"
 
 log() {

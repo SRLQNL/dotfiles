@@ -1,8 +1,23 @@
 #!/bin/sh
 set -eu
 
-USER_NAME="srl"
-USER_HOME="/home/srl"
+# Detect target user: explicit override > SUDO_USER > graphical session owner
+_detect_session_user() {
+  [ -n "${DOTFILES_TARGET_USER:-}" ] && { printf '%s' "$DOTFILES_TARGET_USER"; return 0; }
+  if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
+    printf '%s' "$SUDO_USER"; return 0
+  fi
+  for _c in niri plasmashell kwin_wayland; do
+    _u=$(ps -eo user,comm 2>/dev/null | awk -v c="$_c" '$2==c && $1!="root" {print $1; exit}')
+    [ -n "$_u" ] && { printf '%s' "$_u"; return 0; }
+  done
+  return 1
+}
+USER_NAME=$(_detect_session_user) || {
+  printf 'plasma-app-launch: cannot detect session user; set DOTFILES_TARGET_USER\n' >&2
+  exit 1
+}
+USER_HOME=$(getent passwd "$USER_NAME" | cut -d: -f6)
 
 # Detect session: KDE or niri
 session_pid="$(pgrep -u "$USER_NAME" -n plasmashell || true)"
@@ -56,7 +71,7 @@ if [ "$IS_NIRI" = "1" ]; then
       break
     fi
   done
-  [ -n "$XDG_DATA_DIRS" ] || XDG_DATA_DIRS="/home/srl/.local/share/flatpak/exports/share:/adata/flatpak/exports/share:/var/local/lib/flatpak/exports/share:/usr/local/share:/usr/share"
+  [ -n "$XDG_DATA_DIRS" ] || XDG_DATA_DIRS="$USER_HOME/.local/share/flatpak/exports/share:/var/local/lib/flatpak/exports/share:/usr/local/share:/usr/share"
 
 else
   WAYLAND_DISPLAY="$(read_env WAYLAND_DISPLAY)"
@@ -167,7 +182,7 @@ sys.exit(1)
     if [ "$IS_NIRI" = "1" ]; then
       run_as_user /usr/bin/swaylock
     else
-      run_as_user /home/srl/.local/bin/one-screen-lock
+      run_as_user "$USER_HOME/.local/bin/one-screen-lock"
     fi ;;
   obs)      run_as_user_flatpak flatpak run --installation=adata com.obsproject.Studio ;;
   spectacle)
@@ -180,7 +195,7 @@ sys.exit(1)
     if [ "$IS_NIRI" = "1" ]; then
       run_as_user sh -c 'grim -g "$(slurp)" - | wl-copy'
     else
-      run_as_user /home/srl/.local/bin/screenshot-region
+      run_as_user "$USER_HOME/.local/bin/screenshot-region"
     fi ;;
   spotify)  run_as_user_flatpak flatpak run --installation=adata com.spotify.Client ;;
   steam)

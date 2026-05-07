@@ -1,11 +1,11 @@
 #!/bin/sh
 set -eu
 
-TOP_OUTPUT="DP-1"
-BOTTOM_OUTPUT="DP-2"
-TOP_MODE="1920x1080@143.80"
-BOTTOM_MODE="1920x1080@143.80"
-RESTORE_SCRIPT="/home/srl/.local/bin/restore-second-monitor-after-unlock"
+TOP_OUTPUT="${LOCK_TOP_OUTPUT:-DP-1}"
+BOTTOM_OUTPUT="${LOCK_BOTTOM_OUTPUT:-DP-2}"
+TOP_MODE="${LOCK_TOP_MODE:-1920x1080@143.80}"
+BOTTOM_MODE="${LOCK_BOTTOM_MODE:-1920x1080@143.80}"
+RESTORE_SCRIPT="${RESTORE_SCRIPT:-$HOME/.local/bin/restore-second-monitor-after-unlock}"
 LOG_FILE="/tmp/one-screen-lock.log"
 
 printf '%s start\n' "$(date '+%F %T')" >> "$LOG_FILE"
