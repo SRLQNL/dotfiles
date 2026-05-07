@@ -1,7 +1,10 @@
 \.git
 \.gitignore
 README\.md
+install\.sh
 packages
+profiles
+hosts
 services
 scripts
 backups
