@@ -10,7 +10,6 @@ MAX_WORKSPACES = 5
 PRIMARY_OUTPUT = os.environ.get("NIRI_PRIMARY_OUTPUT", "")
 SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
-PRIMARY_WS_NAMES = frozenset(str(i) for i in range(1, MAX_WORKSPACES + 1))
 
 
 def msg(*args):
@@ -37,9 +36,7 @@ def target_index(idx):
 
 
 def should_unname(name):
-    if not isinstance(name, str):
-        return False
-    return name.startswith(MERGE_PREFIXES) or name in PRIMARY_WS_NAMES
+    return isinstance(name, str) and name.startswith(MERGE_PREFIXES)
 
 
 def primary_name(index):
@@ -133,6 +130,15 @@ def cleanup_single_output():
             action("unset-workspace-name", str(ws["idx"]))
 
 
+def get_active_output(outputs):
+    if output_enabled(outputs, PRIMARY_OUTPUT):
+        return PRIMARY_OUTPUT
+    for name, o in outputs.items():
+        if o.get("current_mode") is not None:
+            return name
+    return None
+
+
 def output_enabled(outputs, name):
     if name not in outputs:
         return False
@@ -151,6 +157,9 @@ def reconcile():
         ensure_secondary_workspaces()
     else:
         cleanup_single_output()
+        active = get_active_output(outputs)
+        if active:
+            ensure_output_workspaces(active, primary_name)
 
 
 def main():
