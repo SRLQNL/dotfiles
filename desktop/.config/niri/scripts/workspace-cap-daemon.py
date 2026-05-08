@@ -85,10 +85,6 @@ def ensure_secondary_workspaces():
 
 
 def cleanup_single_output():
-    outputs = msg("outputs") or {}
-    if len(outputs) != 1:
-        return
-
     workspaces = msg("workspaces") or []
     windows = msg("windows") or []
     by_id = {ws["id"]: ws for ws in workspaces}
@@ -121,11 +117,17 @@ def cleanup_single_output():
             action("unset-workspace-name", name)
 
 
+def output_enabled(outputs, name):
+    if name not in outputs:
+        return False
+    return outputs[name].get("current_mode") is not None
+
+
 def reconcile():
     outputs = msg("outputs") or {}
-    if SECONDARY_OUTPUT and SECONDARY_OUTPUT in outputs:
+    if SECONDARY_OUTPUT and output_enabled(outputs, SECONDARY_OUTPUT):
         ensure_secondary_workspaces()
-    elif len(outputs) == 1:
+    else:
         cleanup_single_output()
 
 
