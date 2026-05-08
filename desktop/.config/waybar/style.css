@@ -58,7 +58,13 @@
 
 /* Hide any workspace beyond MAX_WORKSPACES=5 (niri buffer + migration leftovers) */
 #workspaces button:nth-child(n+6) {
-    display: none;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 0;
+    border-width: 0;
+    opacity: 0;
 }
 
 /* ── Pill boxes: clock, player, window ── */
