@@ -183,7 +183,7 @@ vpn-on()      { sudo ln -sf /etc/sv/naive-proxy /var/service/naive-proxy 2>/dev/
 vpn-off()     { sudo sv down naive-proxy; sudo rm -f /var/service/naive-proxy; }
 vpn-restart() { sudo sv restart naive-proxy; }
 vpn-status()  { sudo sv status naive-proxy; }
-vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://ifconfig.me; }
+vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo; }
 
 # starship prompt
 if command -v starship &>/dev/null; then
