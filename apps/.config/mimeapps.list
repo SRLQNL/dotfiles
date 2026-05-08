@@ -38,3 +38,4 @@ x-scheme-handler/zoomus=zoom-handler.desktop
 x-scheme-handler/about=vivaldi-stable.desktop
 x-scheme-handler/unknown=vivaldi-stable.desktop
 x-scheme-handler/vivaldi=vivaldi-stable.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
