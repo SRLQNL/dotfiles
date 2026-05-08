@@ -130,7 +130,7 @@ def cleanup_single_output():
     for ws in workspaces:
         name = ws.get("name")
         if should_unname(name):
-            action("unset-workspace-name", name)
+            action("unset-workspace-name", str(ws["idx"]))
 
 
 def output_enabled(outputs, name):
