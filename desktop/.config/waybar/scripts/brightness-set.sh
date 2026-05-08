@@ -35,7 +35,7 @@ echo "$TOKEN" > "$TOKEN_FILE"
     sleep 0.15
     [ "$(cat "$TOKEN_FILE" 2>/dev/null)" != "$MY_TOKEN" ] && exit 0
     VAL=$(cat "$CACHE")
-    ddcutil setvcp 10 "$VAL" --bus 4 --noverify --sleep-multiplier 0 &
-    ddcutil setvcp 10 "$VAL" --bus 6 --noverify --sleep-multiplier 0 &
+    ddcutil setvcp 10 "$VAL" --bus 3 --noverify --sleep-multiplier 0 &
+    ddcutil setvcp 10 "$VAL" --bus 5 --noverify --sleep-multiplier 0 &
     wait
 ) &
