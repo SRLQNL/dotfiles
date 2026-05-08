@@ -15,100 +15,62 @@ unlock() {
 }
 
 clipboard_menu() {
-    raw_tmp=$(mktemp)
-    menu_tmp=$(mktemp)
-    result_tmp=$(mktemp)
-    confirm_tmp=$(mktemp)
-    tab=$(printf '\t')
+    thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
+    mkdir -p "$thumbnail_dir"
 
-    cleanup_clipboard_menu() {
-        rm -f "$raw_tmp" "$menu_tmp" "$result_tmp" "$confirm_tmp"
-    }
-
-    trap cleanup_clipboard_menu EXIT INT TERM HUP
-
-    cliphist list > "$raw_tmp"
-
-    while IFS=$tab read -r id preview; do
-        [ -n "$id" ] || continue
-
-        display=$preview
-        icon=edit-paste
-
-        case "$preview" in
-            "[[ binary data "*)
-                meta=${preview#'[[ binary data '}
-                meta=${meta%' ]]'}
-                # shellcheck disable=SC2086
-                set -- $meta
-                size="${1:-} ${2:-}"
-                kind=${3:-binary}
-                dims=${4:-}
-                kind_upper=$(printf '%s' "$kind" | tr '[:lower:]' '[:upper:]')
-                display="Image $kind_upper"
-                [ -n "$dims" ] && display="$display $dims"
-                display="$display - $size"
-                icon=image-x-generic
-                ;;
-            http://*|https://*)
-                icon=text-html
-                ;;
-        esac
-
-        printf '%s\t%s' "$id" "$display" >> "$menu_tmp"
-        printf '\0icon\037%s\n' "$icon" >> "$menu_tmp"
-    done < "$raw_tmp"
-
-    printf '%s\t%s' "__clear__" "Clear clipboard history" >> "$menu_tmp"
-    printf '\0icon\037%s\n' "edit-clear-history" >> "$menu_tmp"
-
-    if ! /usr/bin/fuzzel \
-        --dmenu \
-        --prompt "Clipboard: " \
-        --with-nth=2 \
-        --accept-nth=1 \
-        --match-nth=2 \
-        --only-match \
-        < "$menu_tmp" > "$result_tmp"; then
+    cliphist_list=$(cliphist list)
+    if [ -z "$cliphist_list" ]; then
         return 0
     fi
 
-    selection=$(cat "$result_tmp")
+    # gawk: для картинок декодирует и кэширует thumbnail, добавляет \0icon
+    thumbnail_awk='/^[0-9]+\s<meta http-equiv=/ { next }
+match($0, /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/, grp) {
+  id=grp[1]; ext=grp[3]
+  f=id"."ext
+  system("[ -f '"$thumbnail_dir"'/"f" ] || printf \"%s\\t\" "id" | cliphist decode >'"$thumbnail_dir"'/"f)
+  print $0"\0icon\x1f'"$thumbnail_dir"'/"f
+  next
+}
+1'
 
-    case "$selection" in
-        "")
-            return 0
-            ;;
-        "__clear__")
-            if ! printf '%s\t%s\n%s\t%s\n' \
-                "no" "No" \
-                "yes" "Yes, clear clipboard history" \
-                | /usr/bin/fuzzel \
-                    --dmenu \
-                    --prompt "Clear?: " \
-                    --with-nth=2 \
-                    --accept-nth=1 \
-                    --match-nth=2 \
-                    --only-match \
-                    --lines=2 > "$confirm_tmp"; then
-                return 0
-            fi
+    item=$(echo "$cliphist_list" \
+        | gawk "$thumbnail_awk" \
+        | fuzzel --dmenu \
+            --prompt " " \
+            --placeholder "Clipboard..." \
+            --with-nth=2 \
+            --accept-nth=1 \
+            --no-sort)
 
-            confirm=$(cat "$confirm_tmp")
+    exit_code=$?
 
-            if [ "$confirm" = "yes" ]; then
-                cliphist wipe
-                wl-copy --clear || true
-                notify-send "Clipboard history cleared" || true
-            fi
-            ;;
-        *)
-            line=$(awk -F '\t' -v id="$selection" '$1 == id { print; exit }' "$raw_tmp")
-            if [ -n "$line" ]; then
-                printf '%s' "$line" | cliphist decode | wl-copy
-            fi
-            ;;
-    esac
+    # Alt+0 — очистить всю историю
+    if [ "$exit_code" -eq 19 ]; then
+        confirmation=$(printf 'No\nYes, clear history' \
+            | fuzzel --dmenu --prompt "Clear? " --lines=2)
+        if [ "$confirmation" = "Yes, clear history" ]; then
+            cliphist wipe
+            wl-copy --clear || true
+            rm -rf "$thumbnail_dir"
+            notify-send "Clipboard history cleared"
+        fi
+    # Alt+1 (custom-1) — удалить выбранный элемент
+    elif [ "$exit_code" -eq 10 ]; then
+        if [ -n "$item" ]; then
+            item_id=$(printf '%s' "$item" | cut -f1)
+            printf '%s' "$item_id" | cliphist delete
+            find "$thumbnail_dir" -name "${item_id}.*" -delete 2>/dev/null || true
+        fi
+    elif [ "$exit_code" -eq 0 ] && [ -n "$item" ]; then
+        printf '%s' "$item" | cliphist decode | wl-copy
+    fi
+
+    # Чистим orphaned thumbnails
+    find "$thumbnail_dir" -type f | while IFS= read -r f; do
+        item_id=$(basename "${f%.*}")
+        echo "$cliphist_list" | grep -q "^${item_id}	" || rm -f "$f"
+    done &
 }
 
 trap unlock EXIT INT TERM HUP

@@ -1,18 +1,22 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-# Singleton: kill wofi if already open
-if pgrep -x wofi > /dev/null; then
-    pkill -x wofi
+if pgrep -x fuzzel >/dev/null 2>&1; then
+    pkill -x fuzzel
     exit 0
 fi
 
-options="󰐥 Shutdown\n󰜉 Reboot\n󰍃 Logout\n󰒲 Suspend\n Lock"
+SELECTION="$(printf '⏻  Shutdown\n  Reboot\n󰍃  Logout\n󰒲  Suspend\n  Lock' \
+    | fuzzel --dmenu \
+        --prompt='   ' \
+        --lines=5 \
+        --width=18 \
+        --match-mode=substring \
+        --no-sort)"
 
-chosen="$(echo -e "$options" | wofi --dmenu --prompt "Power:" --lines 5)"
-case $chosen in
+case "$SELECTION" in
     *Shutdown) loginctl poweroff ;;
     *Reboot)   loginctl reboot ;;
-    *Logout)   NIRI_SOCKET=$(ls /run/user/1000/niri.*.sock 2>/dev/null | head -1) niri msg action quit ;;
+    *Logout)   niri msg action quit ;;
     *Suspend)  loginctl suspend ;;
     *Lock)     ~/.config/niri/scripts/lock.sh ;;
 esac
