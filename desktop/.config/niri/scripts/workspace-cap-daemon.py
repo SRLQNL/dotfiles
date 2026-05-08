@@ -7,6 +7,7 @@ import subprocess
 import time
 
 MAX_WORKSPACES = 5
+PRIMARY_OUTPUT = os.environ.get("NIRI_PRIMARY_OUTPUT", "")
 SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
 
@@ -125,7 +126,12 @@ def output_enabled(outputs, name):
 
 def reconcile():
     outputs = msg("outputs") or {}
-    if SECONDARY_OUTPUT and output_enabled(outputs, SECONDARY_OUTPUT):
+    both_on = (
+        SECONDARY_OUTPUT
+        and output_enabled(outputs, PRIMARY_OUTPUT)
+        and output_enabled(outputs, SECONDARY_OUTPUT)
+    )
+    if both_on:
         ensure_secondary_workspaces()
     else:
         cleanup_single_output()
