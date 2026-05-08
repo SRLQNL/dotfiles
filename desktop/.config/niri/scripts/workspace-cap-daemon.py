@@ -171,23 +171,29 @@ def main():
     )
 
     last_cleanup = 0.0
+    last_output_event = 0.0
     for line in proc.stdout:
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
 
-        if not (
+        is_output = "OutputChanged" in event or "OutputsChanged" in event
+        is_workspace = (
             "WorkspacesChanged" in event
             or "WindowsChanged" in event
             or "WindowClosed" in event
-            or "OutputChanged" in event
-            or "OutputsChanged" in event
-        ):
+        )
+        if not (is_output or is_workspace):
             continue
 
         now = time.monotonic()
-        if now - last_cleanup < 0.2:
+        if is_output:
+            last_output_event = now
+
+        # after a monitor change wait 1s for niri to migrate & clean workspaces
+        debounce = 1.0 if (now - last_output_event < 2.0) else 0.2
+        if now - last_cleanup < debounce:
             continue
         last_cleanup = now
         reconcile()
