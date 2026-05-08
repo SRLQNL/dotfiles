@@ -7,10 +7,14 @@ fi
 
 SELECTION="$(printf '⏻  Shutdown\n  Reboot\n󰍃  Logout\n󰒲  Suspend\n  Lock' \
     | fuzzel --dmenu \
-        --prompt='   ' \
+        --hide-prompt \
+        --no-icons \
         --lines=5 \
-        --width=18 \
-        --match-mode=fzf \
+        --width=14 \
+        --horizontal-pad=20 \
+        --vertical-pad=10 \
+        --inner-pad=0 \
+        --line-height=32 \
         --no-sort)"
 
 case "$SELECTION" in
