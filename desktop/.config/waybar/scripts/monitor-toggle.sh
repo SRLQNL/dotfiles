@@ -22,7 +22,7 @@ if [ "$2" = "toggle" ]; then
 fi
 
 if [ "$(enabled)" = "yes" ]; then
-    printf '{"text":"%s ВКЛ","class":"on","tooltip":"Выключить %s"}\n' "$OUTPUT" "$OUTPUT"
+    printf '{"text":"%s ON","class":"on","tooltip":"Turn off %s"}\n' "$OUTPUT" "$OUTPUT"
 else
-    printf '{"text":"%s ВЫКЛ","class":"off","tooltip":"Включить %s"}\n' "$OUTPUT" "$OUTPUT"
+    printf '{"text":"%s OFF","class":"off","tooltip":"Turn on %s"}\n' "$OUTPUT" "$OUTPUT"
 fi
