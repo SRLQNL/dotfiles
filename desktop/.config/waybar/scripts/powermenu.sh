@@ -10,7 +10,7 @@ SELECTION="$(printf '⏻  Shutdown\n  Reboot\n󰍃  Logout\n󰒲  Suspend\n  Loc
         --prompt='   ' \
         --lines=5 \
         --width=18 \
-        --match-mode=substring \
+        --match-mode=fzf \
         --no-sort)"
 
 case "$SELECTION" in
