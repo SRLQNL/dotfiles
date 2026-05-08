@@ -5,11 +5,11 @@ if pgrep -x fuzzel >/dev/null 2>&1; then
     exit 0
 fi
 
-SELECTION="$(printf 'Shutdown\nReboot\nLogout\nSuspend\nLock' \
+SELECTION="$(printf 'Shutdown\nReboot\nLogout\nSuspend' \
     | fuzzel --dmenu \
         --hide-prompt \
         --no-icons \
-        --lines=5 \
+        --lines=4 \
         --width=24 \
         --horizontal-pad=30 \
         --vertical-pad=16 \
@@ -23,5 +23,5 @@ case "$SELECTION" in
     Reboot)   loginctl reboot ;;
     Logout)   niri msg action quit ;;
     Suspend)  loginctl suspend ;;
-    Lock)     ~/.config/niri/scripts/lock.sh ;;
+
 esac
