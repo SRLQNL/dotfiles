@@ -178,6 +178,13 @@ if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh --cmd cd)"
 fi
 
+# NaiveProxy VPN aliases
+vpn-on()      { sudo ln -sf /etc/sv/naive-proxy /var/service/naive-proxy 2>/dev/null; sudo sv up naive-proxy; }
+vpn-off()     { sudo sv down naive-proxy; sudo rm -f /var/service/naive-proxy; }
+vpn-restart() { sudo sv restart naive-proxy; }
+vpn-status()  { sudo sv status naive-proxy; }
+vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://ifconfig.me; }
+
 # starship prompt
 if command -v starship &>/dev/null; then
   eval "$(starship init zsh)"
