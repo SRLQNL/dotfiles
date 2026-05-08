@@ -19,14 +19,14 @@ clipboard_menu() {
     menu_tmp=$(mktemp)
     result_tmp=$(mktemp)
     confirm_tmp=$(mktemp)
-    icon_dir=$(mktemp -d)
+    cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs
+    mkdir -p "$cache_dir"
     tab=$(printf '\t')
     icon_count=0
     icon_limit=40
 
     cleanup_clipboard_menu() {
         rm -f "$raw_tmp" "$menu_tmp" "$result_tmp" "$confirm_tmp"
-        rm -rf "$icon_dir"
     }
 
     trap cleanup_clipboard_menu EXIT INT TERM HUP
@@ -57,14 +57,19 @@ clipboard_menu() {
                 icon=image-x-generic
 
                 if [ "$icon_count" -lt "$icon_limit" ]; then
-                    image_file=$icon_dir/$id.$kind
-                    thumb_file=$icon_dir/$id-thumb.png
+                    thumb_file=$cache_dir/$id.png
 
-                    if printf '%s' "$line" | cliphist decode > "$image_file" 2>/dev/null; then
-                        if magick "$image_file" -auto-orient -thumbnail 96x96^ -gravity center -extent 96x96 "$thumb_file" >/dev/null 2>&1; then
-                            icon=$thumb_file
-                        elif [ -s "$image_file" ]; then
-                            icon=$image_file
+                    if [ -s "$thumb_file" ]; then
+                        icon=$thumb_file
+                    else
+                        image_file=$cache_dir/$id.$kind
+                        if printf '%s' "$line" | cliphist decode > "$image_file" 2>/dev/null; then
+                            if magick "$image_file" -auto-orient -thumbnail 96x96^ -gravity center -extent 96x96 "$thumb_file" >/dev/null 2>&1; then
+                                icon=$thumb_file
+                                rm -f "$image_file"
+                            elif [ -s "$image_file" ]; then
+                                icon=$image_file
+                            fi
                         fi
                     fi
 
@@ -120,6 +125,8 @@ clipboard_menu() {
             if [ "$confirm" = "yes" ]; then
                 cliphist wipe
                 wl-copy --clear || true
+                rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs"/*.png \
+                       "${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs"/*.*  2>/dev/null || true
                 notify-send "Clipboard history cleared" || true
             fi
             ;;
