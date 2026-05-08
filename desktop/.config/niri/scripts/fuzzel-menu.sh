@@ -60,17 +60,18 @@ clipboard_menu() {
                     thumb_file=$cache_dir/$id.png
 
                     if [ -s "$thumb_file" ]; then
+                        # Cache hit — мгновенно
                         icon=$thumb_file
                     else
-                        image_file=$cache_dir/$id.$kind
-                        if printf '%s' "$line" | cliphist decode > "$image_file" 2>/dev/null; then
-                            if magick "$image_file" -auto-orient -thumbnail 96x96^ -gravity center -extent 96x96 "$thumb_file" >/dev/null 2>&1; then
-                                icon=$thumb_file
-                                rm -f "$image_file"
-                            elif [ -s "$image_file" ]; then
-                                icon=$image_file
+                        # Cache miss — используем generic, генерируем в фоне
+                        (
+                            image_file=$cache_dir/$id.$kind
+                            if printf '%s' "$line" | cliphist decode > "$image_file" 2>/dev/null; then
+                                if magick "$image_file" -auto-orient -thumbnail 96x96^ -gravity center -extent 96x96 "$thumb_file" >/dev/null 2>&1; then
+                                    rm -f "$image_file"
+                                fi
                             fi
-                        fi
+                        ) &
                     fi
 
                     icon_count=$((icon_count + 1))
