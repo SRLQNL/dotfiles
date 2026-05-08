@@ -19,11 +19,7 @@ clipboard_menu() {
     menu_tmp=$(mktemp)
     result_tmp=$(mktemp)
     confirm_tmp=$(mktemp)
-    cache_dir=${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs
-    mkdir -p "$cache_dir"
     tab=$(printf '\t')
-    icon_count=0
-    icon_limit=40
 
     cleanup_clipboard_menu() {
         rm -f "$raw_tmp" "$menu_tmp" "$result_tmp" "$confirm_tmp"
@@ -38,7 +34,6 @@ clipboard_menu() {
 
         display=$preview
         icon=edit-paste
-        line=$(printf '%s\t%s' "$id" "$preview")
 
         case "$preview" in
             "[[ binary data "*)
@@ -50,32 +45,10 @@ clipboard_menu() {
                 kind=${3:-binary}
                 dims=${4:-}
                 kind_upper=$(printf '%s' "$kind" | tr '[:lower:]' '[:upper:]')
-
                 display="Image $kind_upper"
                 [ -n "$dims" ] && display="$display $dims"
                 display="$display - $size"
                 icon=image-x-generic
-
-                if [ "$icon_count" -lt "$icon_limit" ]; then
-                    thumb_file=$cache_dir/$id.png
-
-                    if [ -s "$thumb_file" ]; then
-                        # Cache hit — мгновенно
-                        icon=$thumb_file
-                    else
-                        # Cache miss — используем generic, генерируем в фоне
-                        (
-                            image_file=$cache_dir/$id.$kind
-                            if printf '%s' "$line" | cliphist decode > "$image_file" 2>/dev/null; then
-                                if magick "$image_file" -auto-orient -thumbnail 96x96^ -gravity center -extent 96x96 "$thumb_file" >/dev/null 2>&1; then
-                                    rm -f "$image_file"
-                                fi
-                            fi
-                        ) &
-                    fi
-
-                    icon_count=$((icon_count + 1))
-                fi
                 ;;
             http://*|https://*)
                 icon=text-html
@@ -126,8 +99,6 @@ clipboard_menu() {
             if [ "$confirm" = "yes" ]; then
                 cliphist wipe
                 wl-copy --clear || true
-                rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs"/*.png \
-                       "${XDG_CACHE_HOME:-$HOME/.cache}/cliphist-thumbs"/*.*  2>/dev/null || true
                 notify-send "Clipboard history cleared" || true
             fi
             ;;
