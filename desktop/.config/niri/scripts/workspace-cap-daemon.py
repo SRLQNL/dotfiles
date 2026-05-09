@@ -4,12 +4,16 @@
 import json
 import os
 import subprocess
+import threading
 import time
 
 MAX_WORKSPACES = 5
 PRIMARY_OUTPUT = os.environ.get("NIRI_PRIMARY_OUTPUT", "")
 SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
+
+SETTLE_DELAY = 1.5   # seconds of quiet after topology change before reconciling
+COOLDOWN = 2.5       # seconds to ignore workspace events after our own reconcile
 
 
 def msg(*args):
@@ -127,7 +131,7 @@ def cleanup_single_output():
     for ws in workspaces:
         name = ws.get("name")
         if should_unname(name):
-            action("unset-workspace-name", str(ws["idx"]))
+            action("unset-workspace-name", name)
 
 
 def get_active_output(outputs):
@@ -164,39 +168,62 @@ def reconcile():
 
 def main():
     reconcile()
+
     proc = subprocess.Popen(
         ["niri", "msg", "--json", "event-stream"],
         stdout=subprocess.PIPE,
         text=True,
     )
 
-    last_cleanup = 0.0
-    last_output_event = 0.0
+    prev_both_on = None
+    settle_timer = [None]
+    last_reconcile = [time.monotonic()]
+    lock = threading.Lock()
+
+    def run_reconcile():
+        with lock:
+            last_reconcile[0] = time.monotonic()
+        reconcile()
+
+    def arm_timer(delay):
+        with lock:
+            if settle_timer[0]:
+                settle_timer[0].cancel()
+            t = threading.Timer(delay, run_reconcile)
+            t.daemon = True
+            t.start()
+            settle_timer[0] = t
+
     for line in proc.stdout:
         try:
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
 
-        is_output = "OutputChanged" in event or "OutputsChanged" in event
-        is_workspace = (
-            "WorkspacesChanged" in event
-            or "WindowsChanged" in event
-            or "WindowClosed" in event
-        )
-        if not (is_output or is_workspace):
+        if "WorkspacesChanged" not in event and "OutputsChanged" not in event and "OutputChanged" not in event:
             continue
 
         now = time.monotonic()
-        if is_output:
-            last_output_event = now
 
-        # after a monitor change wait 1s for niri to migrate & clean workspaces
-        debounce = 1.0 if (now - last_output_event < 2.0) else 0.2
-        if now - last_cleanup < debounce:
-            continue
-        last_cleanup = now
-        reconcile()
+        current_both_on = prev_both_on
+        if "WorkspacesChanged" in event:
+            ws_list = event["WorkspacesChanged"]["workspaces"]
+            out_set = {w["output"] for w in ws_list}
+            current_both_on = bool(
+                SECONDARY_OUTPUT
+                and PRIMARY_OUTPUT in out_set
+                and SECONDARY_OUTPUT in out_set
+            )
+
+        with lock:
+            is_transition = (prev_both_on is not None and current_both_on != prev_both_on)
+            prev_both_on = current_both_on
+            since_last = now - last_reconcile[0]
+
+        if is_transition:
+            arm_timer(SETTLE_DELAY)
+        elif since_last >= COOLDOWN:
+            arm_timer(0.2)
 
 
 if __name__ == "__main__":
