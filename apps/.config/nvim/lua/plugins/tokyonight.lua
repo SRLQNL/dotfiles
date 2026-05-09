@@ -2,7 +2,7 @@ return {
   {
     "folke/tokyonight.nvim",
     opts = {
-      style = "moon",
+      style = "night",
       terminal_colors = true,
       styles = {
         sidebars = "dark",
@@ -13,7 +13,7 @@ return {
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "tokyonight-moon",
+      colorscheme = "tokyonight-night",
     },
   },
 }
