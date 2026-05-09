@@ -334,6 +334,22 @@ apply_power_profile() {
 }
 
 # ============================================================
+# System-level: USB input power
+# ============================================================
+
+apply_usb_input_power_fix() {
+    [ "${INSTALL_USB_INPUT_POWER_FIX:-0}" = "1" ] || return 0
+    info "=== USB input power fix ==="
+    usb_input_power_rule="$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-srl-usb-input-power.rules"
+    [ -r "$usb_input_power_rule" ] || die "USB input power rule not found: $usb_input_power_rule"
+    [ "$DRY_RUN" = "0" ] && confirm "Install USB input power udev rule? (requires root)" || {
+        info "[dry-run] would install USB input power udev rule: $usb_input_power_rule"
+        return 0
+    }
+    dry "HOSTNAME_KEY='$HOSTNAME_KEY' USB_INPUT_POWER_RULE='$usb_input_power_rule' '$DOTFILES_DIR/scripts/install-usb-input-power-fix.sh'"
+}
+
+# ============================================================
 # System-level: runit services
 # ============================================================
 
@@ -421,21 +437,45 @@ run_validations() {
     done
 
     # Stow symlinks check
-    for pkg in home desktop apps; do
+    for pkg in home desktop apps media bin; do
         pkg_dir="$DOTFILES_DIR/$pkg"
         [ -d "$pkg_dir" ] || continue
-        sample=$(find "$pkg_dir" -type f 2>/dev/null | head -5)
-        broken=0
-        printf '%s\n' "$sample" | while IFS= read -r src; do
-            [ -n "$src" ] || continue
+        missing=$(
+            find "$pkg_dir" \( -type f -o -type l \) 2>/dev/null | while IFS= read -r src; do
             rel=${src#"$pkg_dir"/}
+            case "$rel" in
+                .stow-local-ignore|.config/niri/outputs-host.kdl|*__pycache__*|*.pyc)
+                    continue
+                    ;;
+            esac
+
             target="$HOME/$rel"
             if [ ! -e "$target" ] && [ ! -L "$target" ]; then
-                warn "  [!!] missing stow target: $target"
-                broken=1
+                printf 'missing stow target: %s\n' "$target"
+                continue
+            fi
+
+            if [ ! -L "$target" ]; then
+                printf 'not a stow symlink: %s\n' "$target"
+                continue
+            fi
+
+            src_real=$(readlink -f -- "$src" 2>/dev/null || true)
+            target_real=$(readlink -f -- "$target" 2>/dev/null || true)
+            if [ -n "$src_real" ] && [ "$src_real" != "$target_real" ]; then
+                printf 'stow target points elsewhere: %s -> %s\n' "$target" "$(readlink -- "$target")"
             fi
         done
-        [ "$broken" = "0" ] && info "  [ok] stow package '$pkg' linked"
+        )
+
+        if [ -n "$missing" ]; then
+            printf '%s\n' "$missing" | while IFS= read -r line; do
+                warn "  [!!] $line"
+            done
+            fail=1
+        else
+            info "  [ok] stow package '$pkg' linked"
+        fi
     done
 
     if [ "$fail" = "0" ]; then
@@ -505,6 +545,7 @@ main() {
     info "  pkg files:  $PACKAGE_FILES"
     info "  oh-my-zsh:  $INSTALL_OH_MY_ZSH"
     info "  power svc:  $INSTALL_POWER_PROFILE"
+    info "  USB input:  ${INSTALL_USB_INPUT_POWER_FIX:-0}"
     info "  GRUB theme: $INSTALL_GRUB_THEME"
     [ -n "$GPU_POWER_LIMIT" ] && info "  GPU limit:  ${GPU_POWER_LIMIT}W"
     info "========================================"
@@ -538,6 +579,7 @@ main() {
     if [ "$SKIP_SYSTEM" = "0" ]; then
         info "--- System configuration ---"
         apply_grub
+        apply_usb_input_power_fix
         apply_power_profile
         enable_runit_services
     else

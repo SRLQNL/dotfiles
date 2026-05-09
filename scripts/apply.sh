@@ -16,6 +16,17 @@ need() {
 is_ours() {
     target=$1
     src=$2
+
+    target_real=$(readlink -f -- "$target" 2>/dev/null || true)
+    src_real=$(readlink -f -- "$src" 2>/dev/null || true)
+    if [ -n "$target_real" ] && [ "$target_real" = "$src_real" ]; then
+        return 0
+    fi
+
+    case "$target_real" in
+        "$DOTFILES_DIR"/*) return 0 ;;
+    esac
+
     [ -L "$target" ] || return 1
     [ "$(readlink -- "$target")" = "$src" ] && return 0
     case "$(readlink -- "$target")" in

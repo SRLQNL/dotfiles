@@ -1,2 +1,6 @@
 # outputs-host.kdl is a real file managed by install.sh (host-specific, not a symlink)
 \.config/niri/outputs-host\.kdl
+
+# Runtime Python bytecode should never be linked into $HOME.
+__pycache__
+.*\.pyc

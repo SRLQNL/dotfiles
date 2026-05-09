@@ -122,6 +122,9 @@ scripts/install-grub.sh
 # Power profile runit service
 scripts/install-power-profile.sh
 
+# Host-specific USB keyboard/mouse boot fix for desktop-srl
+scripts/install-usb-input-power-fix.sh
+
 # Steam + Millennium
 STEAM_DATA_DIR=/your/drive/Steam scripts/install-steam-homebrew.sh
 
@@ -148,6 +151,12 @@ scripts/snapshot.sh && git -C ~/dotfiles status
 Two 1920×1080@144Hz DisplayPort monitors stacked vertically:
 - `DP-1` — top, primary, workspaces 1–5
 - `DP-2` — bottom
+
+USB keyboard/mouse boot reliability:
+- `hosts/desktop-srl/system/etc/udev/rules.d/99-srl-usb-input-power.rules`
+  keeps USB hubs and the current keyboard/mouse (`258a:010c`, `046d:c08b`) in
+  `power/control=on`.
+- This is opt-in via `INSTALL_USB_INPUT_POWER_FIX=1` in `hosts/desktop-srl/host.env`.
 
 Lock behavior: top monitor disables on lock, restores on unlock.
 Configure output names via `LOCK_TOP_OUTPUT` / `LOCK_BOTTOM_OUTPUT` in `host.env`.
