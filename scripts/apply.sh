@@ -48,6 +48,10 @@ backup_conflicts() {
         rel=${src#"$package_dir"/}
         target=$TARGET_HOME/$rel
 
+        case "$rel" in
+            .config/niri/outputs-host.kdl) continue ;;
+        esac
+
         if [ -e "$target" ] || [ -L "$target" ]; then
             if is_ours "$target" "$src"; then
                 continue
