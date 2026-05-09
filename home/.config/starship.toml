@@ -1,5 +1,5 @@
 format = """
-$directory$git_branch$git_status$python$nodejs$rust$golang$docker_context\
+$directory$git_branch$git_status$nodejs$rust$golang$docker_context\
 $cmd_duration$line_break$character"""
 
 add_newline = true
@@ -38,6 +38,7 @@ style = "bold #ffca85"
 format = "took [$duration]($style) "
 
 [python]
+disabled = true
 symbol = " "
 style = "bold #61ffca"
 format = '[$symbol($version)]($style) '
