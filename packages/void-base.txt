@@ -48,20 +48,6 @@ btop
 mpv
 cava
 lm_sensors
-neovim
-ripgrep
-fd
-fzf
-lazygit
-gcc
-make
-nodejs
-unzip
-tree-sitter-cli
-StyLua
-shfmt
-shellcheck
-lua-language-server
 
 # UI / apps
 Thunar
