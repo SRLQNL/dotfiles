@@ -51,6 +51,7 @@ lm_sensors
 
 # UI / apps
 Thunar
+vscode
 blueman
 pavucontrol
 pipewire
