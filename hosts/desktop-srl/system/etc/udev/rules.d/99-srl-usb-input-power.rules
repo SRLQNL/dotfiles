@@ -4,18 +4,22 @@
 # - 258a:010c BY Tech Gaming Keyboard
 # - 046d:c08b Logitech G502 HERO Gaming Mouse
 #
-# The kernel cmdline already sets usbcore.autosuspend=-1, but hwdb/udev can
-# still leave hubs in power/control=auto. Keep hubs and these input devices on.
+# usbcore.autosuspend=-1 is set in kernel cmdline (handles boot-time enumeration).
+# This rule handles runtime: ensures hubs and devices stay on after boot settles.
 
-ACTION!="add", ACTION!="change", GOTO="srl_usb_input_power_end"
-SUBSYSTEM!="usb", GOTO="srl_usb_input_power_end"
-TEST!="power/control", GOTO="srl_usb_input_power_end"
+ACTION!="add", SUBSYSTEM!="usb", GOTO="srl_usb_input_power_end"
 
-# USB hubs, including the hub chain in front of the keyboard and mouse.
-ATTR{bDeviceClass}=="09", ATTR{power/control}="on"
+# USB hubs — disable autosuspend completely.
+ACTION=="add", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", \
+  ATTR{power/control}="on", \
+  ATTR{power/autosuspend_delay_ms}="0"
 
-# Current desktop-srl keyboard and mouse.
-ATTR{idVendor}=="258a", ATTR{idProduct}=="010c", ATTR{power/control}="on"
-ATTR{idVendor}=="046d", ATTR{idProduct}=="c08b", ATTR{power/control}="on"
+# Keyboard and mouse.
+ACTION=="add", SUBSYSTEM=="usb", \
+  ATTR{idVendor}=="258a", ATTR{idProduct}=="010c", \
+  ATTR{power/control}="on"
+ACTION=="add", SUBSYSTEM=="usb", \
+  ATTR{idVendor}=="046d", ATTR{idProduct}=="c08b", \
+  ATTR{power/control}="on"
 
 LABEL="srl_usb_input_power_end"
