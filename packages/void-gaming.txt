@@ -3,5 +3,4 @@
 
 steam
 steam-udev-rules
-gamescope
 mono
