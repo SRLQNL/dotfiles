@@ -18,6 +18,8 @@ killall -9 waybar    2>/dev/null || true
 killall -9 cava      2>/dev/null || true
 killall -9 nm-applet 2>/dev/null || true
 sleep 0.3
+# Start nm-applet first so it registers its SNI first → appears rightmost in tray
+nm-applet --indicator &
 
 # Wait for PipeWire pulse socket
 for i in $(seq 1 20); do
@@ -40,9 +42,5 @@ envsubst < "$WAYBAR_TMPL" > "$WAYBAR_CFG"
 if [ -z "$NIRI_SECONDARY_OUTPUT" ]; then
     jq '[.[0]]' "$WAYBAR_CFG" > "${WAYBAR_CFG}.tmp" && mv "${WAYBAR_CFG}.tmp" "$WAYBAR_CFG"
 fi
-
-# Start nm-applet last so it registers its tray icon after everything else
-# → always appears rightmost in tray (closest to bluetooth widget)
-{ sleep 2; nm-applet --indicator & } &
 
 exec waybar -c "$WAYBAR_CFG"
