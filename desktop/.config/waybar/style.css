@@ -168,3 +168,4 @@
 /* ── Tray ── */
 #tray { padding: 0px 4px; }
 #tray > widget { padding: 0px 2px; }
+#tray > .needs-attention { background-color: @color-active-workspace; border-radius: 6px; }
