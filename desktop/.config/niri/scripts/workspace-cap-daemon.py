@@ -7,7 +7,7 @@ import subprocess
 import threading
 import time
 
-MAX_WORKSPACES = 4
+MAX_WORKSPACES = 5
 PRIMARY_OUTPUT = os.environ.get("NIRI_PRIMARY_OUTPUT", "")
 SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
