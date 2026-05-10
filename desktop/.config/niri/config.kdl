@@ -601,3 +601,7 @@ window-rule {
     open-floating false
     default-column-width { proportion 1.0; }
 }
+
+debug {
+    disable-direct-scanout
+}
