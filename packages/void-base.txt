@@ -24,7 +24,6 @@ xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
 Waybar
 foot
-wofi
 fuzzel
 mako
 swayidle

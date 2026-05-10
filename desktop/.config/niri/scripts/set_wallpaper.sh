@@ -2,12 +2,6 @@
 WALLPAPER_DIR="$HOME/wallpapers"
 PERSISTENCE_FILE="$HOME/.config/niri/last_wallpaper.txt"
 
-# Singleton: kill existing wofi if running
-if pgrep -x wofi > /dev/null; then
-    pkill -x wofi
-    exit 0
-fi
-
 wallpaper_list=$(find "$WALLPAPER_DIR" -maxdepth 1 -type f \
     \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) \
     -exec basename {} \; 2>/dev/null)
@@ -17,7 +11,7 @@ if [[ -z "$wallpaper_list" ]]; then
     exit 1
 fi
 
-SELECTED=$(echo "$wallpaper_list" | wofi --dmenu --prompt "Wallpaper:")
+SELECTED=$(echo "$wallpaper_list" | fuzzel --dmenu --prompt="Wallpaper: ")
 [[ -z "$SELECTED" ]] && exit 0
 
 WALLPAPER_PATH="$WALLPAPER_DIR/$SELECTED"

@@ -24,7 +24,7 @@ copy_path "$HOME/.hushlogin" "$DOTFILES_DIR/home/.hushlogin"
 copy_path "$HOME/.config/starship.toml" "$DOTFILES_DIR/home/.config/starship.toml"
 copy_path "$HOME/.config/git" "$DOTFILES_DIR/home/.config/git"
 
-for d in niri waybar wofi mako foot swaylock xdg-desktop-portal xsettingsd autostart; do
+for d in niri waybar mako foot swaylock xdg-desktop-portal xsettingsd autostart; do
     copy_path "$HOME/.config/$d" "$DOTFILES_DIR/desktop/.config/$d"
 done
 find "$DOTFILES_DIR/desktop/.config/niri" -maxdepth 1 -type f \( -name '*backup-*' -o -name '*before-*' -o -name 'last_wallpaper*.txt' \) -delete 2>/dev/null || true
