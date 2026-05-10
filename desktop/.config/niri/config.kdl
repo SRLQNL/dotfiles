@@ -392,13 +392,13 @@ binds {
     // Mod+Shift+Ctrl+Left  { move-workspace-to-monitor-left; }
     // ...
 
-    Mod+Page_Down      { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action focus-workspace-down"; }
+    Mod+Page_Down      { focus-workspace-down; }
     Mod+Page_Up        { focus-workspace-up; }
-    Mod+U              { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action focus-workspace-down"; }
+    Mod+U              { focus-workspace-down; }
     Mod+I              { focus-workspace-up; }
-    Mod+Ctrl+Page_Down { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action move-column-to-workspace-down"; }
+    Mod+Ctrl+Page_Down { move-column-to-workspace-down; }
     Mod+Ctrl+Page_Up   { move-column-to-workspace-up; }
-    Mod+Ctrl+U         { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action move-column-to-workspace-down"; }
+    Mod+Ctrl+U         { move-column-to-workspace-down; }
     Mod+Ctrl+I         { move-column-to-workspace-up; }
 
     // Alternatively, there are commands to move just a single window:
@@ -416,9 +416,9 @@ binds {
     // To avoid scrolling through workspaces really fast, you can use
     // the cooldown-ms property. The bind will be rate-limited to this value.
     // You can set a cooldown on any bind, but it's most useful for the wheel.
-    Mod+WheelScrollDown      cooldown-ms=150 { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action focus-workspace-down"; }
+    Mod+WheelScrollDown      cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp        cooldown-ms=150 { focus-workspace-up; }
-    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { spawn "sh" "-c" "[ $(niri msg --json workspaces | jq '[.[] | select(.is_focused)] | .[0].idx') -lt 5 ] && niri msg action move-column-to-workspace-down"; }
+    Mod+Ctrl+WheelScrollDown cooldown-ms=150 { move-column-to-workspace-down; }
     Mod+Ctrl+WheelScrollUp   cooldown-ms=150 { move-column-to-workspace-up; }
 
     Mod+WheelScrollRight      { focus-column-right; }
@@ -565,7 +565,6 @@ spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist -max-items 50 store"
 spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\""
-spawn-sh-at-startup ". \"$HOME/.config/environment.d/dotfiles-host.conf\" 2>/dev/null; python3 \"$HOME/.config/niri/scripts/workspace-cap-daemon.py\""
 
 // wallpaper layer-rule removed — was hiding swaybg behind niri's background
 
