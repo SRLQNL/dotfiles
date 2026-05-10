@@ -4,3 +4,4 @@
 steam
 steam-udev-rules
 mono
+gamemode
