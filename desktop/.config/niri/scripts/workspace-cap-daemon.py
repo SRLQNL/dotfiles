@@ -7,7 +7,7 @@ import subprocess
 import threading
 import time
 
-MAX_WORKSPACES = 5
+MAX_WORKSPACES = 4
 PRIMARY_OUTPUT = os.environ.get("NIRI_PRIMARY_OUTPUT", "")
 SECONDARY_OUTPUT = os.environ.get("NIRI_SECONDARY_OUTPUT", "")
 MERGE_PREFIXES = ("b",)
@@ -222,8 +222,6 @@ def main():
 
         if is_transition:
             arm_timer(SETTLE_DELAY)
-        elif since_last >= COOLDOWN:
-            arm_timer(0.2)
 
 
 if __name__ == "__main__":
