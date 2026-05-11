@@ -583,14 +583,6 @@ layer-rule {
 layer-rule {
     match namespace="swaync-notification-window"
     geometry-corner-radius 10
-    blur { off }
-    shadow {
-        on
-        softness 20
-        spread 0
-        offset x=0 y=4
-        color "#00000055"
-    }
 }
 
 
