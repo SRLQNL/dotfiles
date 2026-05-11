@@ -1,28 +1,32 @@
 /*
-* Variant: ShadowTheme - REVISED WITH MODULE-SPECIFIC COLORS
-* Maintainer: User
+* Rosé Pine — official palette
+* https://github.com/rose-pine/waybar
 */
 
-/* --- CORE THEME COLORS (Mapped from your input) --- */
-@define-color base              #191724;    /* Mapped from background */
-@define-color surface           #140a1d;    /* Mapped from surface */
-@define-color overlay           #140a1d;    /* Mapped from overlay */
-@define-color muted             #a8899c;    /* Mapped from muted */
-@define-color subtle            #a8899c;    /* Mapped from subtle */
-@define-color text              #e3c7fc;    /* Mapped from foreground */
+@define-color base            #191724;
+@define-color surface         #1f1d2e;
+@define-color overlay         #26233a;
 
-@define-color highlightLow      #09090d;    /* Mapped from surface-variant */
-@define-color highlightMed      #140a1d;    /* Mapped from overlay */
-@define-color highlightHigh     #f1c4e0;    /* Mapped from border */
+@define-color muted           #6e6a86;
+@define-color subtle          #908caa;
+@define-color text            #e0def4;
 
-/* --- MODULE-SPECIFIC COLORS (Mapped and selected for visibility) --- */
-/* Note: Since this is a dark theme, we use bright/light colors for icons. */
+@define-color love            #eb6f92;
+@define-color gold            #f6c177;
+@define-color rose            #ebbcba;
+@define-color pine            #31748f;
+@define-color foam            #9ccfd8;
+@define-color iris            #c4a7e7;
 
-@define-color color-clock           #FF4971;    /* Accent for high visibility */
-@define-color color-network         #8897F4;    /* Secondary */
-@define-color color-volume          #bd93f9;    /* Primary */
-@define-color color-battery         #a8899c;    /* Subtle/Muted for less emphasis */
-@define-color color-power           #B52A5B;    /* Error for power/urgent actions */
-@define-color color-theme-switch    #F18FB0;    /* Success for switches */
-@define-color color-wallpaper       #8897F4;    /* Secondary/Wallpaper */
-@define-color color-active-workspace #F18FB0;   /* Success for active/focused elements */
+@define-color highlightLow    #21202e;
+@define-color highlightMed    #403d52;
+@define-color highlightHigh   #524f67;
+
+/* ── Module-specific aliases ── */
+@define-color color-clock              @love;
+@define-color color-network            @foam;
+@define-color color-volume             @iris;
+@define-color color-power              @love;
+@define-color color-wallpaper          @pine;
+@define-color color-active-workspace   @iris;
+@define-color mauve                    @iris;

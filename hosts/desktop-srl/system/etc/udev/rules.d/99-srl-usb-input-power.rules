@@ -3,23 +3,35 @@
 # desktop-srl has the keyboard and mouse behind USB hubs:
 # - 258a:010c BY Tech Gaming Keyboard
 # - 046d:c08b Logitech G502 HERO Gaming Mouse
+# Hub chain: ASM1074 (174c:2074) → VIA Labs USB2.0 (2109:2817) → devices
 #
-# usbcore.autosuspend=-1 is set in kernel cmdline (handles boot-time enumeration).
-# This rule handles runtime: ensures hubs and devices stay on after boot settles.
+# usbcore.autosuspend=-1 and usbcore.quirks are set in kernel cmdline.
+# These rules cover runtime power control + driver-bind races.
 
-ACTION!="add", SUBSYSTEM!="usb", GOTO="srl_usb_input_power_end"
+ACTION!="add", ACTION!="change", ACTION!="bind", GOTO="srl_usb_input_power_end"
 
-# USB hubs — disable autosuspend completely.
-ACTION=="add", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", \
+# USB hubs — disable autosuspend, cover add and change (driver may reset power/control on bind).
+ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", \
   ATTR{power/control}="on", \
   ATTR{power/autosuspend_delay_ms}="0"
 
-# Keyboard and mouse.
-ACTION=="add", SUBSYSTEM=="usb", \
-  ATTR{idVendor}=="258a", ATTR{idProduct}=="010c", \
+# Keyboard — USB device level.
+ACTION=="add|change", SUBSYSTEM=="usb", \
+  ATTRS{idVendor}=="258a", ATTRS{idProduct}=="010c", \
   ATTR{power/control}="on"
-ACTION=="add", SUBSYSTEM=="usb", \
-  ATTR{idVendor}=="046d", ATTR{idProduct}=="c08b", \
+
+# Mouse — USB device level.
+ACTION=="add|change", SUBSYSTEM=="usb", \
+  ATTRS{idVendor}=="046d", ATTRS{idProduct}=="c08b", \
   ATTR{power/control}="on"
+
+# HID bind events — usbhid driver may reset power/control when it claims the interface.
+ACTION=="bind", SUBSYSTEM=="hid", \
+  KERNELS=="*258a:010c*", \
+  RUN+="/bin/sh -c 'echo on > /sys%p/../power/control 2>/dev/null || true'"
+
+ACTION=="bind", SUBSYSTEM=="hid", \
+  KERNELS=="*046d:c08b*", \
+  RUN+="/bin/sh -c 'echo on > /sys%p/../power/control 2>/dev/null || true'"
 
 LABEL="srl_usb_input_power_end"

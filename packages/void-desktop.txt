@@ -18,7 +18,7 @@ xdg-desktop-portal-wlr
 Waybar
 foot
 fuzzel
-mako
+SwayNotificationCenter
 swayidle
 swaylock
 grim

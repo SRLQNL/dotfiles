@@ -21,6 +21,7 @@
         "tray",
         "bluetooth",
         "pulseaudio",
+        "custom/notification",
         "custom/power"
     ],
     "niri/workspaces": {
@@ -132,10 +133,31 @@
         "on-click": "~/.config/niri/scripts/power-menu.sh",
         "tooltip": false
     },
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "󱅫",
+            "none": "󰂜",
+            "dnd-notification": "󰂠",
+            "dnd-none": "󰪓",
+            "inhibited-notification": "󰂛",
+            "inhibited-none": "󰪑",
+            "dnd-inhibited-notification": "󰂛",
+            "dnd-inhibited-none": "󰪑"
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+    },
     "tray": {
         "icon-size": 18,
         "spacing": 8,
-        "show-passive-items": true
+        "show-passive-items": true,
+        "reverse-direction": true
     }
 },
 {
@@ -160,6 +182,7 @@
         "tray",
         "bluetooth",
         "pulseaudio",
+        "custom/notification",
         "custom/power"
     ],
     "niri/workspaces": {
@@ -271,10 +294,31 @@
         "on-click": "~/.config/niri/scripts/power-menu.sh",
         "tooltip": false
     },
+    "custom/notification": {
+        "tooltip": false,
+        "format": "{icon}",
+        "format-icons": {
+            "notification": "󱅫",
+            "none": "󰂜",
+            "dnd-notification": "󰂠",
+            "dnd-none": "󰪓",
+            "inhibited-notification": "󰂛",
+            "inhibited-none": "󰪑",
+            "dnd-inhibited-notification": "󰂛",
+            "dnd-inhibited-none": "󰪑"
+        },
+        "return-type": "json",
+        "exec-if": "which swaync-client",
+        "exec": "swaync-client -swb",
+        "on-click": "swaync-client -t -sw",
+        "on-click-right": "swaync-client -d -sw",
+        "escape": true
+    },
     "tray": {
         "icon-size": 18,
         "spacing": 8,
-        "show-passive-items": true
+        "show-passive-items": true,
+        "reverse-direction": true
     }
 }
 ]

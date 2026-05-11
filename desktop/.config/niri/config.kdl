@@ -558,7 +558,7 @@ spawn-at-startup "/usr/bin/awww-daemon"
 // spawn-at-startup "/usr/bin/xwayland-satellite"
 spawn-at-startup "bash" "-c" "$HOME/.config/waybar/scripts/launch.sh"
 spawn-at-startup "bash" "-c" "$HOME/.config/niri/scripts/load_wallpaper.sh"
-spawn-at-startup "/usr/bin/mako"
+spawn-at-startup "swaync"
 spawn-at-startup "/usr/bin/gnome-keyring-daemon" "--start" "--components=pkcs11,secrets,ssh,gpg"
 spawn-at-startup "/usr/libexec/polkit-gnome-authentication-agent-1"
 spawn-at-startup "nm-applet" "--indicator"
@@ -567,6 +567,31 @@ spawn-at-startup "bash" "-c" "wl-paste --watch cliphist -max-items 50 store"
 spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\""
 
 // wallpaper layer-rule removed — was hiding swaybg behind niri's background
+
+layer-rule {
+    match namespace="swaync-control-center"
+    geometry-corner-radius 12
+    shadow {
+        on
+        softness 30
+        spread 0
+        offset x=0 y=8
+        color "#00000066"
+    }
+}
+
+layer-rule {
+    match namespace="swaync-notification-window"
+    geometry-corner-radius 10
+    blur { off }
+    shadow {
+        on
+        softness 20
+        spread 0
+        offset x=0 y=4
+        color "#00000055"
+    }
+}
 
 
 window-rule {
