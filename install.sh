@@ -280,19 +280,33 @@ EOF
 apply_host_overlay() {
     hostname_key=$1
     host_dir="$DOTFILES_DIR/hosts/$hostname_key"
-    [ -d "$host_dir" ] || return 0
+    target="$HOME/.config/niri/outputs-host.kdl"
+
+    if [ ! -d "$host_dir" ]; then
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run] would ensure empty niri outputs overlay: $target"
+        else
+            mkdir -p "$(dirname -- "$target")"
+            [ -e "$target" ] || : > "$target"
+        fi
+        return 0
+    fi
 
     info "applying host overlay: $hostname_key"
 
     # niri outputs config
     outputs_kdl="$host_dir/niri-outputs.kdl"
     if [ -f "$outputs_kdl" ]; then
-        target="$HOME/.config/niri/outputs-host.kdl"
         dry "mkdir -p \"\$(dirname '$target')\""
         # Remove symlink first so cp doesn't write through into the dotfiles placeholder
         dry "rm -f '$target'"
         dry "cp '$outputs_kdl' '$target'"
         info "niri outputs: $target"
+    elif [ "$DRY_RUN" = "1" ]; then
+        info "[dry-run] would ensure empty niri outputs overlay: $target"
+    else
+        mkdir -p "$(dirname -- "$target")"
+        [ -e "$target" ] || : > "$target"
     fi
 }
 
@@ -550,7 +564,12 @@ main() {
     [ -n "$GPU_POWER_LIMIT" ] && info "  GPU limit:  ${GPU_POWER_LIMIT}W"
     info "========================================"
 
-    [ "$DRY_RUN" = "0" ] && [ "$YES" = "0" ] && confirm "Proceed with installation?" || true
+    if [ "$DRY_RUN" = "0" ] && [ "$YES" = "0" ]; then
+        confirm "Proceed with installation?" || {
+            info "Aborted."
+            exit 1
+        }
+    fi
 
     # 1. Packages
     if [ "$SKIP_PACKAGES" = "0" ]; then

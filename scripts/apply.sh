@@ -4,7 +4,7 @@ set -eu
 DOTFILES_DIR=${DOTFILES_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
 TARGET_HOME=${TARGET_HOME:-$HOME}
 PACKAGES=${PACKAGES:-"home desktop apps media bin"}
-BACKUP_ROOT=${BACKUP_ROOT:-"$DOTFILES_DIR/backups/$(date +%Y%m%d-%H%M%S)"}
+BACKUP_ROOT=${BACKUP_ROOT:-"${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles/backups/$(date +%Y%m%d-%H%M%S)"}
 
 need() {
     command -v "$1" >/dev/null 2>&1 || {
@@ -67,10 +67,12 @@ backup_conflicts() {
 
 need stow
 mkdir -p "$TARGET_HOME"
+mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+chmod 700 "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles" 2>/dev/null || true
 
 for package in $PACKAGES; do
     backup_conflicts "$package"
-    stow --dir="$DOTFILES_DIR" --target="$TARGET_HOME" --no-folding --restow "$package"
+    stow --dir="$DOTFILES_DIR" --target="$TARGET_HOME" --no-folding --ignore='^\.config/niri/outputs-host\.kdl$' --restow "$package"
 done
 
 printf 'applied packages: %s\n' "$PACKAGES"

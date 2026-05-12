@@ -12,7 +12,8 @@ git clone <repo-url> ~/dotfiles
 cd ~/dotfiles
 
 # 2. Create host config (see hosts/example/host.env)
-cp hosts/example/host.env hosts/$(hostname -s)/host.env
+mkdir -p "hosts/$(hostname -s)"
+cp hosts/example/host.env "hosts/$(hostname -s)/host.env"
 $EDITOR hosts/$(hostname -s)/host.env   # set monitor names, profiles, etc.
 
 # 3. Bootstrap

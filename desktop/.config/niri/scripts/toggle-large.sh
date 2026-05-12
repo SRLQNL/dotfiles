@@ -1,16 +1,20 @@
 #!/bin/bash
+set -euo pipefail
 
 WINDOW_INFO=$(niri msg --json focused-window 2>/dev/null)
 WINDOW_ID=$(echo "$WINDOW_INFO" | jq -r '.id // empty')
 if [[ -z "$WINDOW_ID" ]]; then exit 1; fi
+OUTPUT_INFO=$(niri msg --json focused-output 2>/dev/null || true)
+OUTPUT_W=$(echo "$OUTPUT_INFO" | jq -r '.logical.width // 1920')
+OUTPUT_H=$(echo "$OUTPUT_INFO" | jq -r '.logical.height // 1080')
 
 IS_FLOATING=$(echo "$WINDOW_INFO" | jq -r '.is_floating')
-STATE_FILE="/tmp/niri_float_col_${WINDOW_ID}"
+STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/niri_float_col_${WINDOW_ID}"
 
 # If fullscreen → exit fullscreen and maximize
 TILE_W_FS=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[0] // 0')
 TILE_H_FS=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[1] // 0')
-if (( $(printf "%.0f" "$TILE_W_FS") == 1920 && $(printf "%.0f" "$TILE_H_FS") == 1080 )); then
+if (( $(printf "%.0f" "$TILE_W_FS") >= OUTPUT_W * 95 / 100 && $(printf "%.0f" "$TILE_H_FS") >= OUTPUT_H * 85 / 100 )); then
     niri msg action fullscreen-window
     niri msg action set-column-width "100%"
     niri msg action reset-window-height
@@ -40,13 +44,11 @@ fi
 
 TILE_W=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[0] // 0')
 TILE_W_INT=$(printf "%.0f" "$TILE_W")
-THRESHOLD=$(( 1920 * 85 / 100 ))
+THRESHOLD=$(( OUTPUT_W * 85 / 100 ))
 
 if (( TILE_W_INT >= THRESHOLD )); then
     TILE_H=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[1] // 1002')
     TILE_H_INT=$(printf "%.0f" "$TILE_H")
-    OUTPUT_W=1920
-    OUTPUT_H=1080
     FLOAT_PCT=75
 
     # Target position: centered at 75%x75%

@@ -72,7 +72,9 @@ zstyle ':omz:update' mode disabled  # disable automatic updates
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+if [ -r "$ZSH/oh-my-zsh.sh" ]; then
+  source "$ZSH/oh-my-zsh.sh"
+fi
 
 # User configuration
 
@@ -130,16 +132,16 @@ alias gcl='git clone --depth 1'
 alias gi='git init'
 alias ga='git add'
 alias gc='git commit -m'
-alias gp='git push origin master'
+alias gp='git push'
 
 
 
 export PATH=$PATH:$HOME/.spicetify
 
 # SSH agent auto-start
-if [ -z "$SSH_AUTH_SOCK" ]; then
+if command -v ssh-agent >/dev/null 2>&1 && [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)" > /dev/null
-    ssh-add ~/.ssh/id_ed25519 2>/dev/null
+    [ -r "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519" 2>/dev/null
 fi
 
 # dotnet

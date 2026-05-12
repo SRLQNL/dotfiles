@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-STEAM_DATA_DIR=${STEAM_DATA_DIR:-/adata/Steam}
-STEAM_LIBRARY_DIR=${STEAM_LIBRARY_DIR:-/adata/SteamLibrary}
+STEAM_DATA_DIR=${STEAM_DATA_DIR:-$HOME/.local/share/Steam}
+STEAM_LIBRARY_DIR=${STEAM_LIBRARY_DIR:-$HOME/.local/share/Steam/SteamLibrary}
 STEAM_HOMEBREW_REPO=${STEAM_HOMEBREW_REPO:-SteamClientHomebrew/Millennium}
 STEAM_HOMEBREW_VERSION=${STEAM_HOMEBREW_VERSION:-3.0.0-beta.24}
 

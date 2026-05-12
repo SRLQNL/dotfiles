@@ -1,7 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 # Define the list of preferred media players (MPRIS IDs)
 PREFERRED_PLAYERS="cider spotify"
+ACTIVE_PLAYER_FILE="${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player"
 
 # Define the maximum length for the output text before truncation
 MAX_LENGTH=30
@@ -10,11 +12,10 @@ MAX_LENGTH=30
 get_player_info() {
     local PLAYER_ID=$1
     
-    local STATUS=$(playerctl --player="$PLAYER_ID" status 2>/dev/null)
-    local PLAYER_STATUS=$?
+    local STATUS
+    STATUS=$(playerctl --player="$PLAYER_ID" status 2>/dev/null) || return 1
     
-    if [ $PLAYER_STATUS -eq 0 ]; then
-        if [[ "$STATUS" == "Playing" || "$STATUS" == "Paused" ]]; then
+    if [[ "$STATUS" == "Playing" || "$STATUS" == "Paused" ]]; then
             
             local METADATA=$(playerctl --player="$PLAYER_ID" metadata --format '{{ artist }} - {{ title }}' 2>/dev/null)
             
@@ -35,12 +36,15 @@ get_player_info() {
                 
                 # Output JSON object with the (potentially truncated) song name and status information
                 # The full METADATA is still used for the "tooltip"
-                echo "$PLAYER_ID" > /tmp/waybar_active_player
-                echo "{\"text\": \"$DISPLAY_TEXT\", \"tooltip\": \"$METADATA ($PLAYER_ID $STATUS)\", \"alt\": \"$STATUS\"}"
+                echo "$PLAYER_ID" > "$ACTIVE_PLAYER_FILE"
+                jq -cn \
+                    --arg text "$DISPLAY_TEXT" \
+                    --arg tooltip "$METADATA ($PLAYER_ID $STATUS)" \
+                    --arg alt "$STATUS" \
+                    '{text:$text, tooltip:$tooltip, alt:$alt}'
                 return 0
             fi
         fi
-    fi
     return 1
 }
 
@@ -48,8 +52,7 @@ ALL_PLAYERS=$(playerctl -l 2>/dev/null)
 
 # 1. Loop through preferred desktop players first
 for PLAYER in $PREFERRED_PLAYERS; do
-    get_player_info "$PLAYER"
-    if [ $? -eq 0 ]; then
+    if get_player_info "$PLAYER"; then
         exit 0
     fi
 done
@@ -57,8 +60,7 @@ done
 # 2. If no preferred player is found, loop through ALL active players
 for PLAYER in $ALL_PLAYERS; do
     if [[ "$PREFERRED_PLAYERS" != *"$PLAYER"* ]]; then
-        get_player_info "$PLAYER"
-        if [ $? -eq 0 ]; then
+        if get_player_info "$PLAYER"; then
             exit 0
         fi
     fi

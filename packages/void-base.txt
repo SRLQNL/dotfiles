@@ -6,6 +6,10 @@ git
 stow
 curl
 jq
+gettext
+bc
+gawk
+psmisc
 
 # Bootloader (EFI)
 grub-x86_64-efi
@@ -26,13 +30,17 @@ Waybar
 foot
 fuzzel
 mako
+SwayNotificationCenter
 swayidle
 swaylock
 grim
 slurp
 wl-clipboard
+wl-clip-persist
 cliphist
 brightnessctl
+ddcutil
+wlr-randr
 playerctl
 awww
 
@@ -56,7 +64,9 @@ pavucontrol
 pipewire
 wireplumber
 alsa-pipewire
+gnome-keyring
 papirus-icon-theme
+libnotify
 noto-fonts-ttf
 noto-fonts-ttf-extra
 noto-fonts-cjk

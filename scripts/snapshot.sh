@@ -7,9 +7,21 @@ copy_path() {
     src=$1
     dst=$2
     [ -e "$src" ] || return 0
-    rm -rf -- "$dst"
+
+    src_real=$(readlink -f -- "$src" 2>/dev/null || true)
+    dst_real=$(readlink -f -- "$dst" 2>/dev/null || true)
+    case "$src_real" in
+        "$DOTFILES_DIR"/*)
+            [ "$src_real" = "$dst_real" ] && return 0
+            ;;
+    esac
+
+    tmp="${dst}.tmp.$$"
+    rm -rf -- "$tmp"
     mkdir -p "$(dirname -- "$dst")"
-    cp -a -- "$src" "$dst"
+    cp -a -- "$src" "$tmp"
+    rm -rf -- "$dst"
+    mv -- "$tmp" "$dst"
 }
 
 copy_path "$HOME/.zshrc" "$DOTFILES_DIR/home/.zshrc"
@@ -58,6 +70,10 @@ for f in thunar-open-root-here thunar-open-terminal-here; do
     copy_path "$HOME/.local/bin/$f" "$DOTFILES_DIR/bin/.local/bin/$f"
 done
 
-find /var/service -maxdepth 1 -mindepth 1 -printf '%f\n' 2>/dev/null | sort > "$DOTFILES_DIR/services/runit-enabled.txt" || true
+if [ -d /var/service ]; then
+    tmp="$DOTFILES_DIR/services/runit-enabled.txt.tmp.$$"
+    find /var/service -maxdepth 1 -mindepth 1 -printf '%f\n' 2>/dev/null | sort > "$tmp"
+    mv -- "$tmp" "$DOTFILES_DIR/services/runit-enabled.txt"
+fi
 
 printf 'snapshot updated: %s\n' "$DOTFILES_DIR"

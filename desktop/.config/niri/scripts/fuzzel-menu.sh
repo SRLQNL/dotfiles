@@ -34,6 +34,7 @@ match($0, /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/, grp) {
 }
 1'
 
+    set +e
     item=$(echo "$cliphist_list" \
         | gawk "$thumbnail_awk" \
         | fuzzel --dmenu \
@@ -42,13 +43,13 @@ match($0, /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/, grp) {
             --with-nth=2 \
             --accept-nth=1 \
             --no-sort)
-
     exit_code=$?
+    set -e
 
     # Alt+0 — очистить всю историю
     if [ "$exit_code" -eq 19 ]; then
         confirmation=$(printf 'No\nYes, clear history' \
-            | fuzzel --dmenu --prompt "Clear? " --lines=2)
+            | fuzzel --dmenu --prompt "Clear? " --lines=2 || true)
         if [ "$confirmation" = "Yes, clear history" ]; then
             cliphist wipe
             wl-copy --clear || true

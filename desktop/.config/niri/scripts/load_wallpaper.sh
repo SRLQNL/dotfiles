@@ -1,6 +1,10 @@
 #!/bin/bash
+set -euo pipefail
+
 PERSISTENCE_DIR="$HOME/.config/niri"
 sleep 1  # wait for awww-daemon to be ready
+
+command -v awww >/dev/null 2>&1 || exit 0
 
 # Restore per-output wallpapers if saved
 loaded=0
@@ -9,7 +13,7 @@ for f in "$PERSISTENCE_DIR"/last_wallpaper_*.txt; do
     OUTPUT="${f##*last_wallpaper_}"
     OUTPUT="${OUTPUT%.txt}"
     IMG=$(head -n1 "$f")
-    [[ -f "$IMG" ]] && awww img "$IMG" -o "$OUTPUT" --transition-type none
+    [[ -f "$IMG" && -n "$OUTPUT" ]] && awww img "$IMG" -o "$OUTPUT" --transition-type none
     loaded=1
 done
 

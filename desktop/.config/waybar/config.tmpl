@@ -55,8 +55,8 @@
         "exec": "~/.config/waybar/scripts/cider.sh",
         "return-type": "json",
         "interval": 2,
-        "on-click": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') play-pause",
-        "on-click-right": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') next",
+        "on-click": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') play-pause",
+        "on-click-right": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') next",
         "tooltip": true,
         "max-length": 40,
         "format": " {}"
@@ -216,8 +216,8 @@
         "exec": "~/.config/waybar/scripts/cider.sh",
         "return-type": "json",
         "interval": 2,
-        "on-click": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') play-pause",
-        "on-click-right": "playerctl --player=$(cat /tmp/waybar_active_player 2>/dev/null || echo '%any') next",
+        "on-click": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') play-pause",
+        "on-click-right": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') next",
         "tooltip": true,
         "max-length": 40,
         "format": " {}"

@@ -2,7 +2,10 @@
 # Usage: monitor-toggle.sh <OUTPUT_NAME> [toggle]
 
 OUTPUT="$1"
-[ -z "$OUTPUT" ] && exit 1
+if [ -z "$OUTPUT" ]; then
+    printf '{"text":"","class":"absent","tooltip":"No output configured"}\n'
+    exit 0
+fi
 
 enabled() {
     wlr-randr 2>/dev/null | awk -v out="$OUTPUT" '
