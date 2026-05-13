@@ -17,7 +17,8 @@
 #
 # Quick start for a new Void machine:
 #   git clone <repo> ~/dotfiles && cd ~/dotfiles
-#   HOST=$(cat /etc/hostname | cut -d. -f1)
+#   HOST=$(hostname 2>/dev/null | cut -d. -f1)
+#   [ -n "$HOST" ] || HOST=unknown
 #   mkdir -p "hosts/$HOST"
 #   cp hosts/example/host.env "hosts/$HOST/host.env"
 #   # edit "hosts/$HOST/host.env" for your hardware
@@ -36,7 +37,24 @@ SKIP_SYSTEM=0
 YES=0
 
 usage() {
-    sed -n '/^# Usage:/,/^[^#]/p' "$0" | sed 's/^# \?//'
+    awk '
+        /^# Usage:/ { in_usage = 1 }
+        in_usage && /^#/ { sub(/^# ?/, ""); print; next }
+        in_usage { exit }
+    ' "$0"
+}
+
+hostname_key_default() {
+    host=""
+    if [ -r /etc/hostname ]; then
+        IFS= read -r host < /etc/hostname || host=""
+        host=${host%%.*}
+    fi
+    if [ -z "$host" ]; then
+        host=$(hostname 2>/dev/null || true)
+        host=${host%%.*}
+    fi
+    printf '%s\n' "${host:-unknown}"
 }
 
 append_words() {
@@ -655,7 +673,7 @@ main() {
     if [ -n "$OPT_HOST" ]; then
         HOSTNAME_KEY="$OPT_HOST"
     else
-        HOSTNAME_KEY=$(cat /etc/hostname 2>/dev/null | cut -d. -f1 || hostname 2>/dev/null || echo "unknown")
+        HOSTNAME_KEY=$(hostname_key_default)
     fi
     info "hostname: $HOSTNAME_KEY"
 

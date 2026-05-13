@@ -8,25 +8,15 @@ CACHE="/tmp/waybar_brightness"
 LOCK="/tmp/waybar_brightness.lock"
 TOKEN_FILE="/tmp/waybar_brightness_token"
 STEP=5
-
-apply_ddc() {
-    command -v ddcutil >/dev/null 2>&1 || return 0
-
-    if [ -n "${DDCUTIL_BUSES:-}" ]; then
-        for bus in $DDCUTIL_BUSES; do
-            ddcutil setvcp 10 "$1" --bus "$bus" --noverify --sleep-multiplier 0 &
-        done
-    else
-        ddcutil setvcp 10 "$1" --noverify --sleep-multiplier 0 &
-    fi
-    wait
-}
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/brightness-ddc.sh"
 
 # Atomic read-modify-write via flock to prevent race on rapid scroll
 {
     flock -x 9
 
-    CURRENT=$(cat "$CACHE" 2>/dev/null || echo 80)
+    CURRENT=$(cat "$CACHE" 2>/dev/null || ddc_average_brightness || echo 80)
 
     if [ "$1" = "UP" ]; then
         NEW=$(( CURRENT + STEP ))
@@ -50,5 +40,5 @@ echo "$TOKEN" > "$TOKEN_FILE"
     sleep 0.15
     [ "$(cat "$TOKEN_FILE" 2>/dev/null)" != "$MY_TOKEN" ] && exit 0
     VAL=$(cat "$CACHE")
-    apply_ddc "$VAL"
+    ddc_apply_brightness "$VAL"
 ) &

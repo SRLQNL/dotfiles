@@ -2,15 +2,15 @@
 set -euo pipefail
 
 # Reads brightness from cache (populated by brightness-set.sh on scroll).
-# Falls back to ddcutil once on first run.
+# Falls back to current DDC brightness across connected displays.
 
 CACHE="/tmp/waybar_brightness"
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/brightness-ddc.sh"
 
 if [ ! -f "$CACHE" ]; then
-    VAL=""
-    if command -v ddcutil >/dev/null 2>&1; then
-        VAL=$(ddcutil getvcp 10 --display 1 2>/dev/null | sed -n 's/.*current value = *\([0-9][0-9]*\).*/\1/p' | head -n 1)
-    fi
+    VAL=$(ddc_average_brightness || true)
     echo "${VAL:-80}" > "$CACHE"
 fi
 

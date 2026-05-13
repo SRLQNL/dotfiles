@@ -13,7 +13,8 @@ git clone <repo-url> ~/dotfiles
 cd ~/dotfiles
 
 # 2. Create host config (see hosts/example/host.env)
-HOST=$(cat /etc/hostname | cut -d. -f1)
+HOST=$(hostname 2>/dev/null | cut -d. -f1)
+[ -n "$HOST" ] || HOST=unknown
 mkdir -p "hosts/$HOST"
 cp hosts/example/host.env "hosts/$HOST/host.env"
 $EDITOR "hosts/$HOST/host.env"   # set monitor names, profiles, etc.
@@ -110,7 +111,8 @@ profiles and hosts should use `INSTALL_PACKAGES_FILE`.
 
 ```sh
 # 1. Copy example host config
-HOST=$(cat /etc/hostname | cut -d. -f1)
+HOST=$(hostname 2>/dev/null | cut -d. -f1)
+[ -n "$HOST" ] || HOST=unknown
 mkdir -p "hosts/$HOST"
 cp hosts/example/host.env "hosts/$HOST/host.env"
 

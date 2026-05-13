@@ -1,19 +1,11 @@
-#! /bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 bar="▁▂▃▄▅▆▇█"
-dict="s/;//g;"
-
-# creating "dictionary" to replace char with bar
-i=0
-while [ $i -lt ${#bar} ]
-do
-    dict="${dict}s/$i/${bar:$i:1}/g;"
-    i=$((i=i+1))
-done
 
 # write cava config
 config_file="/tmp/polybar_cava_config"
-echo "
+cat > "$config_file" <<EOF
 [general]
 bars = 18
 
@@ -25,9 +17,18 @@ method = raw
 raw_target = /dev/stdout
 data_format = ascii
 ascii_max_range = 7
-" > $config_file
+EOF
 
 # read stdout from cava
-cava -p $config_file | while read -r line; do
-    echo $line | sed $dict
+cava -p "$config_file" | while IFS= read -r line; do
+    line=${line//;/}
+    out=""
+    for ((i=0; i<${#line}; i++)); do
+        ch=${line:i:1}
+        case "$ch" in
+            [0-7]) out+="${bar:ch:1}" ;;
+            *) out+="$ch" ;;
+        esac
+    done
+    printf '%s\n' "$out"
 done

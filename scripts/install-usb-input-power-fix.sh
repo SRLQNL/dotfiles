@@ -2,7 +2,21 @@
 set -eu
 
 DOTFILES_DIR=${DOTFILES_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
-HOSTNAME_KEY=${HOSTNAME_KEY:-$(cat /etc/hostname 2>/dev/null | cut -d. -f1 || hostname 2>/dev/null || echo unknown)}
+
+hostname_key_default() {
+    host=""
+    if [ -r /etc/hostname ]; then
+        IFS= read -r host < /etc/hostname || host=""
+        host=${host%%.*}
+    fi
+    if [ -z "$host" ]; then
+        host=$(hostname 2>/dev/null || true)
+        host=${host%%.*}
+    fi
+    printf '%s\n' "${host:-unknown}"
+}
+
+HOSTNAME_KEY=${HOSTNAME_KEY:-$(hostname_key_default)}
 RULE_SRC=${USB_INPUT_POWER_RULE:-"$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-srl-usb-input-power.rules"}
 RULE_DST="/etc/udev/rules.d/99-srl-usb-input-power.rules"
 
