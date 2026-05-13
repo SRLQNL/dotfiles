@@ -1,21 +1,21 @@
 // Host-specific niri output configuration for desktop-srl
-// Two DP monitors stacked vertically: DP-1 on top, DP-2 on bottom
-
-output "DP-1" {
-    mode "1920x1080@143.981"
-    scale 1
-    transform "normal"
-    position x=0 y=0
-    hot-corners {
-        off
-    }
-}
+// Two DP monitors stacked vertically: DP-2 is the primary bottom output, DP-1 is top.
 
 output "DP-2" {
     mode "1920x1080@143.981"
     scale 1
     transform "normal"
     position x=0 y=1080
+    hot-corners {
+        off
+    }
+}
+
+output "DP-1" {
+    mode "1920x1080@143.981"
+    scale 1
+    transform "normal"
+    position x=0 y=0
     hot-corners {
         off
     }

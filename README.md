@@ -179,8 +179,8 @@ scripts/snapshot.sh && git -C ~/dotfiles status
 ### Dual-monitor desktop (hosts/desktop-srl)
 
 Two 1920×1080@144Hz DisplayPort monitors stacked vertically:
-- `DP-1` — top, primary, workspaces 1–5
-- `DP-2` — bottom
+- `DP-2` — bottom, primary, workspaces 1–5
+- `DP-1` — top
 
 USB keyboard/mouse boot reliability:
 - `hosts/desktop-srl/system/etc/udev/rules.d/99-srl-usb-input-power.rules`
