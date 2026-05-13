@@ -2,7 +2,7 @@
 set -eu
 
 DOTFILES_DIR=${DOTFILES_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
-HOSTNAME_KEY=${HOSTNAME_KEY:-$(hostname -s 2>/dev/null || cat /etc/hostname 2>/dev/null | tr -d '\n' || echo unknown)}
+HOSTNAME_KEY=${HOSTNAME_KEY:-$(cat /etc/hostname 2>/dev/null | cut -d. -f1 || hostname 2>/dev/null || echo unknown)}
 RULE_SRC=${USB_INPUT_POWER_RULE:-"$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-srl-usb-input-power.rules"}
 RULE_DST="/etc/udev/rules.d/99-srl-usb-input-power.rules"
 
@@ -14,8 +14,15 @@ RULE_DST="/etc/udev/rules.d/99-srl-usb-input-power.rules"
 as_root() {
     if [ "$(id -u)" -eq 0 ]; then
         "$@"
-    else
+    elif [ -n "${ROOT_CMD:-}" ]; then
+        "$ROOT_CMD" "$@"
+    elif command -v sudo >/dev/null 2>&1; then
         sudo "$@"
+    elif command -v doas >/dev/null 2>&1; then
+        doas "$@"
+    else
+        printf 'root command requires sudo or doas\n' >&2
+        exit 1
     fi
 }
 

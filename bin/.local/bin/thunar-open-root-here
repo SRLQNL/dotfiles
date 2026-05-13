@@ -4,8 +4,18 @@ target="$1"
 [ -n "$target" ] || target="$PWD"
 [ -d "$target" ] || target="$(dirname "$target")"
 
-exec pkexec env \
+pkexec_bin=$(command -v pkexec) || {
+  printf 'missing command: pkexec\n' >&2
+  exit 1
+}
+
+thunar_bin=$(command -v thunar || command -v Thunar) || {
+  printf 'missing command: thunar\n' >&2
+  exit 1
+}
+
+exec "$pkexec_bin" env \
   WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
   XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-}" \
   DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-}" \
-  /usr/bin/thunar "$target"
+  "$thunar_bin" "$target"

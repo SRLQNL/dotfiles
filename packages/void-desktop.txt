@@ -1,3 +1,6 @@
+# Legacy split reference. install.sh does not install this file by default.
+# The default package set is profiles/base.env -> packages/void-base.txt.
+
 # Core bootstrap
 git
 stow

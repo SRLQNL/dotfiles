@@ -1,9 +1,16 @@
 #!/bin/sh
 exec 2>&1
 
+CONFIG_FILE=${SRL_POWER_PROFILE_CONFIG:-/etc/sv/srl-power-profile/conf}
+[ -r "$CONFIG_FILE" ] && . "$CONFIG_FILE"
+
 CPU_GOVERNOR=${CPU_GOVERNOR:-powersave}
 CPU_EPP=${CPU_EPP:-balance_performance}
-GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-275}
+CPU_NO_TURBO=${CPU_NO_TURBO:-0}
+CPU_MIN_PERF_PCT=${CPU_MIN_PERF_PCT:-15}
+CPU_MAX_PERF_PCT=${CPU_MAX_PERF_PCT:-100}
+GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-}
+GPU_PERSISTENCE_MODE=${GPU_PERSISTENCE_MODE:-1}
 
 write_if_supported() {
     file=$1
@@ -23,34 +30,38 @@ write_if_supported() {
 }
 
 apply_cpu_profile() {
-    [ -w /sys/devices/system/cpu/intel_pstate/no_turbo ] &&
-        printf '0\n' > /sys/devices/system/cpu/intel_pstate/no_turbo
+    [ -n "$CPU_NO_TURBO" ] &&
+        write_if_supported /sys/devices/system/cpu/intel_pstate/no_turbo "$CPU_NO_TURBO"
 
-    [ -w /sys/devices/system/cpu/intel_pstate/min_perf_pct ] &&
-        printf '15\n' > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+    [ -n "$CPU_MIN_PERF_PCT" ] &&
+        write_if_supported /sys/devices/system/cpu/intel_pstate/min_perf_pct "$CPU_MIN_PERF_PCT"
 
-    [ -w /sys/devices/system/cpu/intel_pstate/max_perf_pct ] &&
-        printf '100\n' > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+    [ -n "$CPU_MAX_PERF_PCT" ] &&
+        write_if_supported /sys/devices/system/cpu/intel_pstate/max_perf_pct "$CPU_MAX_PERF_PCT"
 
     for governor in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
         [ -e "$governor" ] || continue
+        [ -n "$CPU_GOVERNOR" ] || continue
         write_if_supported "$governor" "$CPU_GOVERNOR"
     done
 
     for epp in /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference; do
         [ -e "$epp" ] || continue
+        [ -n "$CPU_EPP" ] || continue
         write_if_supported "$epp" "$CPU_EPP"
     done
 }
 
 apply_nvidia_profile() {
-    command -v nvidia-smi >/dev/null 2>&1 || return 0
+    nvidia_smi=$(command -v nvidia-smi) || return 0
 
     i=0
     while [ "$i" -lt 30 ]; do
-        if nvidia-smi >/dev/null 2>&1; then
-            nvidia-smi -pm 1 >/dev/null 2>&1 || true
-            nvidia-smi -pl "$GPU_POWER_LIMIT" >/dev/null 2>&1 || true
+        if "$nvidia_smi" >/dev/null 2>&1; then
+            [ -n "$GPU_PERSISTENCE_MODE" ] &&
+                "$nvidia_smi" -pm "$GPU_PERSISTENCE_MODE" >/dev/null 2>&1 || true
+            [ -n "$GPU_POWER_LIMIT" ] &&
+                "$nvidia_smi" -pl "$GPU_POWER_LIMIT" >/dev/null 2>&1 || true
             return 0
         fi
 

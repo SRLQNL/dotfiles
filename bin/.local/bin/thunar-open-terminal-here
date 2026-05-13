@@ -4,4 +4,26 @@ target="$1"
 [ -n "$target" ] || target="$PWD"
 [ -d "$target" ] || target="$(dirname "$target")"
 
-exec /usr/bin/foot --working-directory="$target"
+if terminal=$(command -v foot); then
+  exec "$terminal" --working-directory="$target"
+fi
+
+if terminal=$(command -v kitty); then
+  exec "$terminal" --directory "$target"
+fi
+
+if terminal=$(command -v alacritty); then
+  exec "$terminal" --working-directory "$target"
+fi
+
+if terminal=$(command -v xfce4-terminal); then
+  exec "$terminal" --working-directory="$target"
+fi
+
+terminal=$(command -v x-terminal-emulator || command -v xterm) || {
+  printf 'missing terminal command\n' >&2
+  exit 1
+}
+
+cd "$target" || exit 1
+exec "$terminal"

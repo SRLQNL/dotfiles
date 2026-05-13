@@ -9,8 +9,15 @@ STEAM_HOMEBREW_VERSION=${STEAM_HOMEBREW_VERSION:-3.0.0-beta.24}
 as_root() {
     if [ "$(id -u)" -eq 0 ]; then
         "$@"
-    else
+    elif [ -n "${ROOT_CMD:-}" ]; then
+        "$ROOT_CMD" "$@"
+    elif command -v sudo >/dev/null 2>&1; then
         sudo "$@"
+    elif command -v doas >/dev/null 2>&1; then
+        doas "$@"
+    else
+        printf 'root command requires sudo or doas\n' >&2
+        exit 1
     fi
 }
 
@@ -21,15 +28,100 @@ require_cmd() {
     }
 }
 
+detect_gpu_stack() {
+    if [ -n "${STEAM_GPU_STACK:-}" ]; then
+        printf '%s\n' "$STEAM_GPU_STACK"
+        return 0
+    fi
+
+    has_nvidia=0
+    has_amd=0
+    has_intel=0
+
+    for vendor in /sys/class/drm/card*/device/vendor; do
+        [ -r "$vendor" ] || continue
+        case "$(cat "$vendor")" in
+            0x10de)
+                has_nvidia=1
+                ;;
+            0x1002)
+                has_amd=1
+                ;;
+            0x8086)
+                has_intel=1
+                ;;
+        esac
+    done
+
+    [ "$has_nvidia" = 1 ] && { printf 'nvidia\n'; return 0; }
+    [ "$has_amd" = 1 ] && { printf 'amd\n'; return 0; }
+    [ "$has_intel" = 1 ] && { printf 'intel\n'; return 0; }
+
+    if command -v lspci >/dev/null 2>&1; then
+        pci_devices=$(lspci -nn)
+        if printf '%s\n' "$pci_devices" | grep -Eiq 'VGA|3D|Display'; then
+            if printf '%s\n' "$pci_devices" | grep -Eiq '(VGA|3D|Display).*NVIDIA'; then
+                printf 'nvidia\n'
+                return 0
+            fi
+            if printf '%s\n' "$pci_devices" | grep -Eiq '(VGA|3D|Display).*(AMD|ATI)'; then
+                printf 'amd\n'
+                return 0
+            fi
+            if printf '%s\n' "$pci_devices" | grep -Eiq '(VGA|3D|Display).*Intel'; then
+                printf 'intel\n'
+                return 0
+            fi
+        fi
+    fi
+
+    printf 'unknown\n'
+}
+
+gpu_packages_for_stack() {
+    case "$1" in
+        nvidia)
+            printf '%s\n' "${STEAM_NVIDIA_32BIT_PACKAGES:-nvidia-libs-32bit}"
+            ;;
+        amd)
+            printf '%s\n' "${STEAM_AMD_32BIT_PACKAGES:-mesa-32bit mesa-dri-32bit mesa-vulkan-radeon-32bit}"
+            ;;
+        intel)
+            printf '%s\n' "${STEAM_INTEL_32BIT_PACKAGES:-mesa-32bit mesa-dri-32bit mesa-vulkan-intel-32bit}"
+            ;;
+        mesa)
+            printf '%s\n' "${STEAM_MESA_32BIT_PACKAGES:-mesa-32bit mesa-dri-32bit}"
+            ;;
+        none|unknown)
+            printf '%s\n' "${STEAM_EXTRA_32BIT_PACKAGES:-}"
+            ;;
+        *)
+            printf 'unsupported STEAM_GPU_STACK: %s\n' "$1" >&2
+            exit 1
+            ;;
+    esac
+}
+
 install_void_steam() {
+    gpu_stack=$(detect_gpu_stack)
+    gpu_packages=$(gpu_packages_for_stack "$gpu_stack")
+
     as_root xbps-install -Sy void-repo-multilib void-repo-nonfree void-repo-multilib-nonfree
     as_root xbps-install -S
     as_root xbps-install -Sy \
         steam steam-udev-rules \
-        nvidia-libs-32bit vulkan-loader-32bit libva-32bit \
+        vulkan-loader-32bit libva-32bit \
         libssl3-32bit openssl-32bit \
         libpulseaudio-32bit alsa-plugins-pulseaudio-32bit \
         mono
+
+    if [ -n "$gpu_packages" ]; then
+        printf 'installing Steam 32-bit GPU packages for %s: %s\n' "$gpu_stack" "$gpu_packages"
+        # shellcheck disable=SC2086
+        as_root xbps-install -Sy $gpu_packages
+    else
+        printf 'no Steam 32-bit GPU packages selected for detected stack: %s\n' "$gpu_stack"
+    fi
 }
 
 setup_steam_paths() {
@@ -130,7 +222,6 @@ install_millennium() {
 }
 
 require_cmd curl
-require_cmd jq
 require_cmd tar
 require_cmd sha256sum
 

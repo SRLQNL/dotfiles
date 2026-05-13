@@ -2,12 +2,24 @@
 set -eu
 
 root_source=$(findmnt -n -o SOURCE /)
-root_uuid=$(blkid -s UUID -o value "$root_source")
+root_uuid=$(blkid -s UUID -o value "$root_source" 2>/dev/null || true)
 kernel=$(find /boot -maxdepth 1 -type f -name 'vmlinuz-*' -printf '%f\n' | sort -V | tail -n 1)
 version=${kernel#vmlinuz-}
 initrd="initramfs-${version}.img"
+boot_uuid=$root_uuid
+kernel_path="/boot/$kernel"
+initrd_path="/boot/$initrd"
+
+boot_source=$(findmnt -rn /boot -o SOURCE 2>/dev/null || true)
+if [ -n "$boot_source" ]; then
+    boot_uuid=$(blkid -s UUID -o value "$boot_source" 2>/dev/null || true)
+    kernel_path="/$kernel"
+    initrd_path="/$initrd"
+fi
 
 [ -n "$kernel" ] || exit 0
+[ -n "$root_uuid" ] || exit 0
+[ -n "$boot_uuid" ] || exit 0
 [ -f "/boot/$initrd" ] || exit 0
 
 cmdline_default=${GRUB_CMDLINE_LINUX_DEFAULT:-}
@@ -20,11 +32,11 @@ menuentry 'Void Linux' --class void --class gnu-linux --class gnu --class os {
     insmod gzio
     insmod part_gpt
     insmod ext2
-    search --no-floppy --fs-uuid --set=root $root_uuid
+    search --no-floppy --fs-uuid --set=root $boot_uuid
     echo 'Loading Linux $version ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro $cmdline $cmdline_default
+    linux $kernel_path root=UUID=$root_uuid ro $cmdline $cmdline_default
     echo 'Loading initial ramdisk ...'
-    initrd /boot/$initrd
+    initrd $initrd_path
 }
 
 menuentry 'Void Linux (recovery mode)' --class recovery --class void --class gnu-linux --class gnu --class os {
@@ -33,11 +45,11 @@ menuentry 'Void Linux (recovery mode)' --class recovery --class void --class gnu
     insmod gzio
     insmod part_gpt
     insmod ext2
-    search --no-floppy --fs-uuid --set=root $root_uuid
+    search --no-floppy --fs-uuid --set=root $boot_uuid
     echo 'Loading Linux $version recovery ...'
-    linux /boot/$kernel root=UUID=$root_uuid ro single
+    linux $kernel_path root=UUID=$root_uuid ro single
     echo 'Loading initial ramdisk ...'
-    initrd /boot/$initrd
+    initrd $initrd_path
 }
 
 EOF

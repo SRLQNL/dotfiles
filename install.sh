@@ -6,8 +6,8 @@
 #
 # Options:
 #   --dry-run           Show what would be done without making changes
-#   --host HOSTNAME     Override hostname for host config (default: $(hostname -s))
-#   --profiles LIST     Additional profiles to load (space-separated)
+#   --host HOSTNAME     Override hostname for host config (default: /etc/hostname basename)
+#   --profiles LIST     Additional profiles to load (quoted, repeated, or space-separated)
 #   --skip-packages     Skip xbps package installation
 #   --skip-stow         Skip stow apply
 #   --skip-system       Skip system-level changes (GRUB, runit services)
@@ -17,8 +17,10 @@
 #
 # Quick start for a new Void machine:
 #   git clone <repo> ~/dotfiles && cd ~/dotfiles
-#   cp hosts/example/host.env hosts/$(hostname -s)/host.env
-#   # edit hosts/$(hostname -s)/host.env for your hardware
+#   HOST=$(cat /etc/hostname | cut -d. -f1)
+#   mkdir -p "hosts/$HOST"
+#   cp hosts/example/host.env "hosts/$HOST/host.env"
+#   # edit "hosts/$HOST/host.env" for your hardware
 #   ./install.sh
 
 set -eu
@@ -33,18 +35,69 @@ SKIP_STOW=0
 SKIP_SYSTEM=0
 YES=0
 
+usage() {
+    sed -n '/^# Usage:/,/^[^#]/p' "$0" | sed 's/^# \?//'
+}
+
+append_words() {
+    current=$1
+    shift
+    for word do
+        [ -n "$word" ] || continue
+        current="${current:+$current }$word"
+    done
+    printf '%s\n' "$current"
+}
+
+unique_words() {
+    unique_seen=""
+    for word do
+        [ -n "$word" ] || continue
+        case " $unique_seen " in
+            *" $word "*) ;;
+            *) unique_seen="${unique_seen:+$unique_seen }$word" ;;
+        esac
+    done
+    printf '%s\n' "$unique_seen"
+}
+
 # --- argument parsing ---
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run)      DRY_RUN=1 ;;
-        --host)         shift; OPT_HOST="$1" ;;
-        --profiles)     shift; OPT_PROFILES="$1" ;;
+        --host)
+            shift
+            [ $# -gt 0 ] || { printf 'Option --host requires a hostname\n' >&2; exit 1; }
+            case "$1" in --*) printf 'Option --host requires a hostname\n' >&2; exit 1 ;; esac
+            OPT_HOST="$1"
+            ;;
+        --host=*)
+            OPT_HOST=${1#--host=}
+            [ -n "$OPT_HOST" ] || { printf 'Option --host requires a hostname\n' >&2; exit 1; }
+            ;;
+        --profiles)
+            shift
+            [ $# -gt 0 ] || { printf 'Option --profiles requires at least one profile\n' >&2; exit 1; }
+            profiles_before=$OPT_PROFILES
+            while [ $# -gt 0 ]; do
+                case "$1" in --*) break ;; esac
+                OPT_PROFILES=$(append_words "$OPT_PROFILES" "$1")
+                shift
+            done
+            [ "$OPT_PROFILES" != "$profiles_before" ] || { printf 'Option --profiles requires at least one profile\n' >&2; exit 1; }
+            continue
+            ;;
+        --profiles=*)
+            profiles_arg=${1#--profiles=}
+            [ -n "$profiles_arg" ] || { printf 'Option --profiles requires at least one profile\n' >&2; exit 1; }
+            OPT_PROFILES=$(append_words "$OPT_PROFILES" $profiles_arg)
+            ;;
         --skip-packages) SKIP_PACKAGES=1 ;;
         --skip-stow)    SKIP_STOW=1 ;;
         --skip-system)  SKIP_SYSTEM=1 ;;
         --yes|-y)       YES=1 ;;
         -h|--help)
-            sed -n '/^# Usage:/,/^[^#]/p' "$0" | sed 's/^# \?//'
+            usage
             exit 0
             ;;
         *) printf 'Unknown option: %s\n' "$1" >&2; exit 1 ;;
@@ -74,15 +127,65 @@ dry() {
 }
 
 # --- privilege helpers ---
+root_helper() {
+    if [ "$(id -u)" -eq 0 ]; then
+        return 0
+    elif [ -n "${ROOT_CMD:-}" ]; then
+        printf '%s\n' "$ROOT_CMD"
+    elif command -v sudo >/dev/null 2>&1; then
+        printf '%s\n' sudo
+    elif command -v doas >/dev/null 2>&1; then
+        printf '%s\n' doas
+    else
+        return 1
+    fi
+}
+
+require_root_helper() {
+    reason=$1
+    if [ "$(id -u)" -eq 0 ]; then
+        info "root privileges: already running as root"
+        return 0
+    fi
+
+    helper=$(root_helper || true)
+    if [ -n "$helper" ]; then
+        info "root helper: $helper"
+        return 0
+    fi
+
+    if [ "$DRY_RUN" = "1" ]; then
+        warn "no sudo/doas found; dry-run continues, but $reason would require root"
+        return 0
+    fi
+
+    die "$reason requires root, but neither sudo nor doas is available. Run as root or install/configure sudo or doas."
+}
+
 as_root() {
-    if [ "$(id -u)" -eq 0 ]; then "$@"
-    else sudo "$@"
+    if [ "$(id -u)" -eq 0 ]; then
+        "$@"
+    elif [ -n "${ROOT_CMD:-}" ]; then
+        "$ROOT_CMD" "$@"
+    elif command -v sudo >/dev/null 2>&1; then
+        sudo "$@"
+    elif command -v doas >/dev/null 2>&1; then
+        doas "$@"
+    else
+        die "root command requires sudo or doas: $*"
     fi
 }
 
 dry_root() {
     if [ "$DRY_RUN" = "1" ]; then
-        info "[dry-run] sudo $*"
+        helper=$(root_helper || true)
+        if [ -n "$helper" ]; then
+            info "[dry-run] $helper $*"
+        elif [ "$(id -u)" -eq 0 ]; then
+            info "[dry-run] $*"
+        else
+            info "[dry-run] <sudo|doas> $*"
+        fi
     else
         info "run(root): $*"
         as_root "$@"
@@ -165,6 +268,8 @@ print_hardware_info() {
 
 # Accumulated package files (space-separated paths)
 PACKAGE_FILES=""
+INSTALL_PACKAGES_FILE=""
+INSTALL_PACKAGES_EXTRA=""
 INSTALL_OH_MY_ZSH=1
 INSTALL_STOW_PACKAGES="home desktop apps media bin"
 INSTALL_POWER_PROFILE=0
@@ -189,6 +294,33 @@ load_profile() {
     else
         warn "profile not found: $name (skipping)"
     fi
+}
+
+add_package_file() {
+    pfile=$1
+    [ -n "$pfile" ] || return 0
+    case " $PACKAGE_FILES " in
+        *" $pfile "*) return 0 ;;
+    esac
+    PACKAGE_FILES="${PACKAGE_FILES:+$PACKAGE_FILES }$pfile"
+}
+
+build_package_file_list() {
+    PACKAGE_FILES=""
+    for pfile in ${INSTALL_PACKAGES_FILE:-}; do
+        add_package_file "$pfile"
+    done
+    for pfile in ${INSTALL_PACKAGES_EXTRA:-}; do
+        add_package_file "$pfile"
+    done
+}
+
+system_configuration_needs_root() {
+    [ "$INSTALL_GRUB_THEME" = "1" ] && return 0
+    [ "$INSTALL_POWER_PROFILE" = "1" ] && return 0
+    [ "${INSTALL_USB_INPUT_POWER_FIX:-0}" = "1" ] && return 0
+    [ -r "$DOTFILES_DIR/services/runit-enabled.txt" ] && [ -d /etc/sv ] && return 0
+    return 1
 }
 
 # ============================================================
@@ -318,7 +450,7 @@ apply_grub() {
     [ "$INSTALL_GRUB_THEME" = "1" ] || return 0
 
     info "=== GRUB configuration ==="
-    grub_cmdline="quiet loglevel=0 rd.udev.log_level=0 udev.log_level=0 vt.global_cursor_default=0 video=efifb:nobgrt"
+    grub_cmdline="quiet loglevel=0 vt.global_cursor_default=0"
     [ -n "$GRUB_EXTRA_CMDLINE" ] && grub_cmdline="$grub_cmdline $GRUB_EXTRA_CMDLINE"
 
     if [ "$DRY_RUN" = "1" ]; then
@@ -330,7 +462,11 @@ apply_grub() {
     fi
 
     confirm "Install GRUB theme and update grub.cfg? (requires root)" || return 0
-    dry "$DOTFILES_DIR/scripts/install-grub.sh"
+    dry_root env \
+        DOTFILES_DIR="$DOTFILES_DIR" \
+        GRUB_EXTRA_CMDLINE="$GRUB_EXTRA_CMDLINE" \
+        GRUB_GFXMODE="$GRUB_GFXMODE" \
+        "$DOTFILES_DIR/scripts/install-grub.sh"
 }
 
 # ============================================================
@@ -344,7 +480,12 @@ apply_power_profile() {
         info "[dry-run] would install power profile service"
         return 0
     }
-    dry "$DOTFILES_DIR/scripts/install-power-profile.sh"
+    dry_root env \
+        DOTFILES_DIR="$DOTFILES_DIR" \
+        CPU_GOVERNOR="$CPU_GOVERNOR" \
+        CPU_EPP="$CPU_EPP" \
+        GPU_POWER_LIMIT="$GPU_POWER_LIMIT" \
+        "$DOTFILES_DIR/scripts/install-power-profile.sh"
 }
 
 # ============================================================
@@ -360,7 +501,7 @@ apply_usb_input_power_fix() {
         info "[dry-run] would install USB input power udev rule: $usb_input_power_rule"
         return 0
     }
-    dry "HOSTNAME_KEY='$HOSTNAME_KEY' USB_INPUT_POWER_RULE='$usb_input_power_rule' '$DOTFILES_DIR/scripts/install-usb-input-power-fix.sh'"
+    dry_root env DOTFILES_DIR="$DOTFILES_DIR" HOSTNAME_KEY="$HOSTNAME_KEY" USB_INPUT_POWER_RULE="$usb_input_power_rule" "$DOTFILES_DIR/scripts/install-usb-input-power-fix.sh"
 }
 
 # ============================================================
@@ -514,7 +655,7 @@ main() {
     if [ -n "$OPT_HOST" ]; then
         HOSTNAME_KEY="$OPT_HOST"
     else
-        HOSTNAME_KEY=$(hostname -s 2>/dev/null || cat /etc/hostname 2>/dev/null | tr -d '\n' || echo "unknown")
+        HOSTNAME_KEY=$(cat /etc/hostname 2>/dev/null | cut -d. -f1 || hostname 2>/dev/null || echo "unknown")
     fi
     info "hostname: $HOSTNAME_KEY"
 
@@ -540,21 +681,18 @@ main() {
     fi
 
     # Load profiles from host.env PROFILES var + --profiles CLI arg
-    all_profiles="${PROFILES:-} ${OPT_PROFILES:-}"
+    all_profiles=$(unique_words ${PROFILES:-} ${OPT_PROFILES:-})
     for profile in $all_profiles; do
         [ -n "$profile" ] && load_profile "$profile"
     done
 
-    # Expand package file list
-    base_pkg="$DOTFILES_DIR/packages/void-base.txt"
-    PACKAGE_FILES="$base_pkg"
-    for extra_file in ${INSTALL_PACKAGES_EXTRA:-}; do
-        [ -f "$extra_file" ] && PACKAGE_FILES="$PACKAGE_FILES $extra_file"
-    done
+    # Expand package file list from base/profile/host configuration.
+    # INSTALL_PACKAGES_EXTRA is kept for old host.env/profile snippets.
+    build_package_file_list
 
     info "========================================"
     info "Install plan:"
-    info "  profiles:   ${PROFILES:-base}"
+    info "  profiles:   ${all_profiles:-base}"
     info "  stow pkgs:  $INSTALL_STOW_PACKAGES"
     info "  pkg files:  $PACKAGE_FILES"
     info "  oh-my-zsh:  $INSTALL_OH_MY_ZSH"
@@ -563,6 +701,13 @@ main() {
     info "  GRUB theme: $INSTALL_GRUB_THEME"
     [ -n "$GPU_POWER_LIMIT" ] && info "  GPU limit:  ${GPU_POWER_LIMIT}W"
     info "========================================"
+
+    if [ "$SKIP_PACKAGES" = "0" ] && [ -n "$PACKAGE_FILES" ]; then
+        require_root_helper "package installation"
+    fi
+    if [ "$SKIP_SYSTEM" = "0" ] && system_configuration_needs_root; then
+        require_root_helper "system configuration"
+    fi
 
     if [ "$DRY_RUN" = "0" ] && [ "$YES" = "0" ]; then
         confirm "Proceed with installation?" || {
