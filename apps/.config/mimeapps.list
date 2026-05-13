@@ -45,6 +45,7 @@ application/x-extension-shtml=vivaldi-stable.desktop;
 application/x-extension-xht=vivaldi-stable.desktop;
 application/x-extension-xhtml=vivaldi-stable.desktop;
 application/xhtml+xml=vivaldi-stable.desktop;
+audio/flac=mpv.desktop;
 audio/mpeg=mpv.desktop;
 audio/mp4=mpv.desktop;
 audio/ogg=mpv.desktop;
