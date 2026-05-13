@@ -14,12 +14,19 @@ NIRI_SECONDARY_OUTPUT="${NIRI_SECONDARY_OUTPUT:-}"
 WAYBAR_CFG="/tmp/waybar-config-$(hostname).json"
 WAYBAR_TMPL="$HOME/.config/waybar/config.tmpl"
 
-killall -9 waybar    2>/dev/null || true
-killall -9 cava      2>/dev/null || true
-killall -9 nm-applet 2>/dev/null || true
+pkill -TERM -x waybar    2>/dev/null || true
+pkill -TERM -x cava      2>/dev/null || true
+pkill -TERM -x swaync-client 2>/dev/null || true
 sleep 0.3
-# Start nm-applet first so it registers its SNI first → appears rightmost in tray
-nm-applet --indicator &
+pkill -KILL -x waybar    2>/dev/null || true
+pkill -KILL -x cava      2>/dev/null || true
+pkill -KILL -x swaync-client 2>/dev/null || true
+
+# Keep tray clients alive across Waybar restarts. Killing nm-applet can leave stale
+# StatusNotifier/menu state and makes tray clicks unreliable until it registers again.
+if command -v nm-applet >/dev/null 2>&1 && ! pgrep -x nm-applet >/dev/null 2>&1; then
+    nm-applet --indicator &
+fi
 
 # Wait for PipeWire pulse socket
 for i in $(seq 1 20); do

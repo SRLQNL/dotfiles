@@ -85,14 +85,12 @@
     background: none;
 }
 
-/* ── Tray + Bluetooth — grouped pill ── */
+/* ── Tray + Bluetooth ── */
 #tray {
     padding: 1px 8px;
-    margin: 4px 0px;
-    margin-left: 3px;
+    margin: 4px 3px;
     border: 1px solid @highlightHigh;
-    border-right: none;
-    border-radius: 20px 0 0 20px;
+    border-radius: 20px;
     background: none;
 }
 
@@ -101,10 +99,9 @@
 
 #bluetooth {
     padding: 1px 10px;
-    margin: 4px 0px;
-    margin-right: 3px;
+    margin: 4px 3px;
     border: 1px solid @highlightHigh;
-    border-radius: 0 20px 20px 0;
+    border-radius: 20px;
     background: none;
     color: @color-network;
 }
@@ -198,4 +195,3 @@
 }
 
 #custom-power:hover { background: #ff5555; }
-

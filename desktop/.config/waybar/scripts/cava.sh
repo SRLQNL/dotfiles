@@ -30,5 +30,7 @@ cava -p "$config_file" | while IFS= read -r line; do
             *) out+="$ch" ;;
         esac
     done
-    printf '%s\n' "$out"
+    if ! printf '%s\n' "$out" 2>/dev/null; then
+        break
+    fi
 done
