@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Text Editor
+Name[ru]=Текстовый редактор
+Comment=Edit text files
+Comment[ru]=Редактирование текстовых файлов
+Icon=org.gnome.TextEditor
+Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=gnome-text-editor --file-forwarding org.gnome.TextEditor @@u %U @@
+Terminal=false
+Categories=GNOME;GTK;Utility;TextEditor;
+Keywords=write;notepad;text;txt;editor;
+MimeType=text/plain;text/csv;text/markdown;text/x-markdown;text/tab-separated-values;application/json;application/x-zerosize;
+StartupNotify=true

@@ -70,13 +70,17 @@ mkdir -p "$TARGET_HOME"
 mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
 chmod 700 "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles" 2>/dev/null || true
 
+mime_src=$DOTFILES_DIR/apps/.config/mimeapps.list
+mime_target=$TARGET_HOME/.config/mimeapps.list
+if [ -e "$mime_src" ] && [ -L "$mime_target" ] && [ "$(readlink -f -- "$mime_target" 2>/dev/null || true)" = "$mime_src" ]; then
+    rm -f -- "$mime_target"
+fi
+
 for package in $PACKAGES; do
     backup_conflicts "$package"
     stow --dir="$DOTFILES_DIR" --target="$TARGET_HOME" --no-folding --ignore='^\.config/niri/outputs-host\.kdl$' --restow "$package"
 done
 
-mime_src=$DOTFILES_DIR/apps/.config/mimeapps.list
-mime_target=$TARGET_HOME/.config/mimeapps.list
 if [ -e "$mime_src" ] && [ -L "$mime_target" ] && [ "$(readlink -f -- "$mime_target" 2>/dev/null || true)" = "$mime_src" ]; then
     mkdir -p "$(dirname -- "$mime_target")"
     ln -sfn -- "$mime_src" "$mime_target"

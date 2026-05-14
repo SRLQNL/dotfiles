@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Open File Manager Meta E
+Exec=thunar
+Icon=org.xfce.thunar
+NoDisplay=true
+StartupNotify=false
+Categories=System;FileManager;
+X-KDE-Shortcuts=Meta+E
