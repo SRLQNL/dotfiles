@@ -21,6 +21,7 @@ if [ "$2" = "toggle" ]; then
     else
         wlr-randr --output "$OUTPUT" --on
     fi
+    pkill -RTMIN+11 -x waybar 2>/dev/null || true
     exit 0
 fi
 

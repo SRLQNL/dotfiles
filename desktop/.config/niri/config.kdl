@@ -229,6 +229,11 @@ animations {
 
     // Slow down all animations by this factor. Values below 1 speed them up instead.
     // slowdown 3.0
+
+    window-close {
+        duration-ms 110
+        curve "ease-out-quad"
+    }
 }
 
 blur {

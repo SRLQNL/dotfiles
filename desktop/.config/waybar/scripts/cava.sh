@@ -4,10 +4,12 @@ set -euo pipefail
 bar="▁▂▃▄▅▆▇█"
 
 # write cava config
-config_file="/tmp/polybar_cava_config"
+config_file="${XDG_RUNTIME_DIR:-/tmp}/waybar-cava-$USER-$$.conf"
+trap 'rm -f "$config_file"' EXIT INT TERM
 cat > "$config_file" <<EOF
 [general]
 bars = 18
+framerate = 40
 
 [input]
 method = pulse

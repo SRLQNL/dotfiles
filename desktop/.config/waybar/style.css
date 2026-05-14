@@ -59,7 +59,7 @@
 /* ── Pill boxes: clock, player, window ── */
 #clock,
 #custom-player,
-#custom-window {
+#window {
     padding: 1px 13px;
     margin: 4px 3px;
     border-radius: 20px;
@@ -69,7 +69,7 @@
 }
 
 #clock { color: @color-clock; }
-#custom-window { color: @subtle; }
+#window { color: @subtle; }
 #custom-player { color: @text; opacity: 0.9; }
 
 /* ── Cava — bordered box ── */
