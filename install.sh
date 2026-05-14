@@ -291,6 +291,7 @@ INSTALL_PACKAGES_EXTRA=""
 INSTALL_OH_MY_ZSH=1
 INSTALL_STOW_PACKAGES="home desktop apps media bin"
 INSTALL_POWER_PROFILE=0
+INSTALL_NVIDIA_WAYLAND_ENV=0
 INSTALL_GRUB_THEME=0
 INSTALL_STEAM=0
 GRUB_EXTRA_CMDLINE=""
@@ -336,6 +337,7 @@ build_package_file_list() {
 system_configuration_needs_root() {
     [ "$INSTALL_GRUB_THEME" = "1" ] && return 0
     [ "$INSTALL_POWER_PROFILE" = "1" ] && return 0
+    [ "$INSTALL_NVIDIA_WAYLAND_ENV" = "1" ] && return 0
     [ "${INSTALL_USB_INPUT_POWER_FIX:-0}" = "1" ] && return 0
     [ -r "$DOTFILES_DIR/services/runit-enabled.txt" ] && [ -d /etc/sv ] && return 0
     return 1
@@ -420,6 +422,14 @@ LOCK_TOP_OUTPUT=${LOCK_TOP_OUTPUT:-}
 LOCK_BOTTOM_OUTPUT=${LOCK_BOTTOM_OUTPUT:-}
 SCREENSHOT_DIR=${SCREENSHOT_DIR:-$HOME/Screenshots}
 EOF
+    if [ "${INSTALL_NVIDIA_WAYLAND_ENV:-0}" = "1" ]; then
+        cat >> "$env_file" <<EOF
+
+# NVIDIA Wayland session hints.
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+GBM_BACKEND=nvidia-drm
+EOF
+    fi
     info "session env written: $env_file"
 }
 
@@ -504,6 +514,27 @@ apply_power_profile() {
         CPU_EPP="$CPU_EPP" \
         GPU_POWER_LIMIT="$GPU_POWER_LIMIT" \
         "$DOTFILES_DIR/scripts/install-power-profile.sh"
+}
+
+# ============================================================
+# System-level: NVIDIA Wayland application profile
+# ============================================================
+
+apply_nvidia_wayland_profile() {
+    [ "$INSTALL_NVIDIA_WAYLAND_ENV" = "1" ] || return 0
+    src="$DOTFILES_DIR/system/etc/nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json"
+    dst_dir="/etc/nvidia/nvidia-application-profiles-rc.d"
+    dst="$dst_dir/50-limit-free-buffer-pool-in-wayland-compositors.json"
+
+    info "=== NVIDIA Wayland application profile ==="
+    [ -r "$src" ] || die "NVIDIA application profile not found: $src"
+    if [ "$DRY_RUN" = "1" ]; then
+        info "[dry-run] would install NVIDIA application profile: $dst"
+        return 0
+    fi
+    confirm "Install NVIDIA Wayland application profile? (requires root)" || return 0
+    dry_root install -d -m 755 "$dst_dir"
+    dry_root install -m 644 "$src" "$dst"
 }
 
 # ============================================================
@@ -763,6 +794,7 @@ main() {
         apply_grub
         apply_usb_input_power_fix
         apply_power_profile
+        apply_nvidia_wayland_profile
         enable_runit_services
     else
         info "--- Skipping system config (--skip-system) ---"

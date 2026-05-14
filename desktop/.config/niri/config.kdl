@@ -231,7 +231,8 @@ animations {
     // slowdown 3.0
 }
 
-blur {
+// Disabled for smoother composition; blur is one of the heavier visual effects.
+/-blur {
     passes 3
     offset 3.0
     noise 0.02
@@ -578,7 +579,8 @@ layer-rule {
     match namespace="swaync-control-center"
     geometry-corner-radius 12
     shadow {
-        on
+        // off: shadows add extra composition work and are non-essential here.
+        // on
         softness 30
         spread 0
         offset x=0 y=8
