@@ -577,9 +577,6 @@ spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py
 layer-rule {
     match namespace="swaync-control-center"
     geometry-corner-radius 12
-    background-effect {
-        blur true
-    }
     shadow {
         // off: shadows add extra composition work and are non-essential here.
         // on
@@ -593,9 +590,6 @@ layer-rule {
 layer-rule {
     match namespace="swaync-notification-window"
     geometry-corner-radius 10
-    background-effect {
-        blur true
-    }
 }
 
 
