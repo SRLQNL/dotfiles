@@ -168,11 +168,6 @@ if command -v bat &>/dev/null; then
   export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 fi
 
-# zoxide (smarter cd)
-if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
-
 # NaiveProxy VPN aliases
 vpn-on()      { sudo ln -sf /etc/sv/naive-proxy /var/service/naive-proxy 2>/dev/null; sudo sv up naive-proxy; }
 vpn-off()     { sudo sv down naive-proxy; sudo rm -f /var/service/naive-proxy; }
@@ -183,6 +178,11 @@ vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; ech
 # starship prompt
 if command -v starship &>/dev/null; then
   eval "$(starship init zsh)"
+fi
+
+# zoxide (smarter cd) — after prompt init
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
 fi
 
 # fastfetch at terminal start (only in interactive, non-tmux)

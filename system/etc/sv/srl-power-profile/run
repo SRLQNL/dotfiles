@@ -30,14 +30,26 @@ write_if_supported() {
 }
 
 apply_cpu_profile() {
-    [ -n "$CPU_NO_TURBO" ] &&
-        write_if_supported /sys/devices/system/cpu/intel_pstate/no_turbo "$CPU_NO_TURBO"
+    if [ -n "$CPU_NO_TURBO" ]; then
+        if [ -w /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
+            # Intel pstate: 1=disable turbo, 0=enable turbo
+            write_if_supported /sys/devices/system/cpu/intel_pstate/no_turbo "$CPU_NO_TURBO"
+        elif [ -w /sys/devices/system/cpu/cpufreq/boost ]; then
+            # AMD cpufreq: 0=disable turbo, 1=enable turbo (inverted)
+            if [ "$CPU_NO_TURBO" = "1" ]; then
+                write_if_supported /sys/devices/system/cpu/cpufreq/boost 0
+            else
+                write_if_supported /sys/devices/system/cpu/cpufreq/boost 1
+            fi
+        fi
+    fi
 
-    [ -n "$CPU_MIN_PERF_PCT" ] &&
-        write_if_supported /sys/devices/system/cpu/intel_pstate/min_perf_pct "$CPU_MIN_PERF_PCT"
-
-    [ -n "$CPU_MAX_PERF_PCT" ] &&
-        write_if_supported /sys/devices/system/cpu/intel_pstate/max_perf_pct "$CPU_MAX_PERF_PCT"
+    if [ -w /sys/devices/system/cpu/intel_pstate/min_perf_pct ]; then
+        [ -n "$CPU_MIN_PERF_PCT" ] &&
+            write_if_supported /sys/devices/system/cpu/intel_pstate/min_perf_pct "$CPU_MIN_PERF_PCT"
+        [ -n "$CPU_MAX_PERF_PCT" ] &&
+            write_if_supported /sys/devices/system/cpu/intel_pstate/max_perf_pct "$CPU_MAX_PERF_PCT"
+    fi
 
     for governor in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
         [ -e "$governor" ] || continue

@@ -11,6 +11,3 @@ if [ -f "$HOME/.config/environment.d/dotfiles-host.conf" ]; then
     esac
 fi
 
-if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
-    exec startx
-fi

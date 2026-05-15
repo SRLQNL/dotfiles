@@ -3,8 +3,8 @@ set -eu
 
 mode=${1:-launcher}
 runtime_dir=${XDG_RUNTIME_DIR:-/tmp}
-state_file=$runtime_dir/srl-fuzzel-menu.mode
-lock_dir=$runtime_dir/srl-fuzzel-menu.lock
+state_file=$runtime_dir/fuzzel-menu.mode
+lock_dir=$runtime_dir/fuzzel-menu.lock
 locked=0
 
 unlock() {

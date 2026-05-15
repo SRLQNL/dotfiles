@@ -1,6 +1,6 @@
-[user]
-	email = tapo4c902@gmail.com
-	name = SRLQNL
+# [user] section intentionally omitted — set per-machine:
+#   git config --global user.email "you@example.com"
+#   git config --global user.name  "Your Name"
 [credential "https://github.com"]
 	helper =
 	helper = !~/.local/bin/gh auth git-credential

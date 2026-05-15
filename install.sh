@@ -771,6 +771,17 @@ main() {
         for pfile in $PACKAGE_FILES; do
             install_packages_from_file "$pfile"
         done
+        # Install arch/firmware-appropriate GRUB package
+        _grub_pkg=""
+        if [ -d /sys/firmware/efi ]; then
+            case "$(uname -m)" in
+                x86_64)  _grub_pkg=grub-x86_64-efi ;;
+                aarch64) _grub_pkg=grub-arm64-efi ;;
+            esac
+        else
+            _grub_pkg=grub-i386-pc
+        fi
+        [ -n "$_grub_pkg" ] && dry_root xbps-install -Sy "$_grub_pkg"
         install_oh_my_zsh
     else
         info "--- Skipping package installation (--skip-packages) ---"

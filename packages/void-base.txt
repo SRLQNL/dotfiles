@@ -11,8 +11,8 @@ bc
 gawk
 psmisc
 
-# Bootloader (EFI)
-grub-x86_64-efi
+# Bootloader — arch/firmware-specific; install.sh selects the right package automatically
+# x86_64 EFI: grub-x86_64-efi | ARM64 EFI: grub-arm64-efi | BIOS: grub-i386-pc
 linux
 
 # Void repos (enable before everything else)

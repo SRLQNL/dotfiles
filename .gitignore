@@ -1,6 +1,7 @@
 .stow-state/
 backups/
 *.log
+services/runit-enabled.txt
 
 # Runtime/editor noise
 .DS_Store

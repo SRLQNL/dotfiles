@@ -219,8 +219,8 @@ wrapper to avoid Steam Runtime noise with newer host fontconfig files.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SCREENSHOT_DIR` | `~/Pictures/Screenshots` | Where `screenshot-region` saves files |
-| `LOCK_TOP_OUTPUT` | `DP-1` | Monitor to disable during lock screen |
-| `LOCK_BOTTOM_OUTPUT` | `DP-2` | Secondary monitor for lock restore script |
+| `LOCK_TOP_OUTPUT` | *(empty)* | Monitor to disable during lock screen — set to your output name (e.g. `DP-1`, `eDP-1`) |
+| `LOCK_BOTTOM_OUTPUT` | *(empty)* | Secondary monitor for lock restore script — set to your output name |
 | `DOTFILES_TARGET_USER` | auto-detect | User for `plasma-app-launch` when run as root |
 | `STEAM_DATA_DIR` | `~/.local/share/Steam` | Steam data directory |
 | `STEAM_LIBRARY_DIR` | `~/.local/share/Steam/SteamLibrary` | Steam library path |
