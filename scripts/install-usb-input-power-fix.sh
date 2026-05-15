@@ -17,8 +17,8 @@ hostname_key_default() {
 }
 
 HOSTNAME_KEY=${HOSTNAME_KEY:-$(hostname_key_default)}
-RULE_SRC=${USB_INPUT_POWER_RULE:-"$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-srl-usb-input-power.rules"}
-RULE_DST="/etc/udev/rules.d/99-srl-usb-input-power.rules"
+RULE_SRC=${USB_INPUT_POWER_RULE:-"$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-usb-input-power.rules"}
+RULE_DST="/etc/udev/rules.d/99-usb-input-power.rules"
 
 [ -r "$RULE_SRC" ] || {
     printf 'USB input power rule not found for host %s: %s\n' "$HOSTNAME_KEY" "$RULE_SRC" >&2

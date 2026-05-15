@@ -2,10 +2,10 @@
 set -eu
 
 DOTFILES_DIR=${DOTFILES_DIR:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}
-SERVICE_DIR=/etc/sv/srl-power-profile
+SERVICE_DIR=/etc/sv/power-profile
 CONFIG_FILE=$SERVICE_DIR/conf
 LEGACY_SERVICE=cpu-performance
-DISABLE_LEGACY=${SRL_POWER_PROFILE_DISABLE_LEGACY_CPU_PERFORMANCE:-0}
+DISABLE_LEGACY=${POWER_PROFILE_DISABLE_LEGACY_CPU_PERFORMANCE:-0}
 
 as_root() {
     if [ "$(id -u)" -eq 0 ]; then
@@ -28,7 +28,7 @@ install_default_config() {
     tmp=$(mktemp)
     trap 'rm -f "$tmp"' EXIT INT TERM
     cat > "$tmp" <<EOF
-# SRL power profile runtime config.
+# Power profile runtime config.
 # Values can be left empty to skip that setting.
 CPU_GOVERNOR=${CPU_GOVERNOR:-powersave}
 CPU_EPP=${CPU_EPP:-balance_performance}
@@ -44,7 +44,7 @@ EOF
 disable_legacy_service() {
     [ "$DISABLE_LEGACY" = 1 ] || {
         if [ -e "/var/service/$LEGACY_SERVICE" ] || [ -e "/etc/sv/$LEGACY_SERVICE" ]; then
-            printf 'left existing %s service intact; set SRL_POWER_PROFILE_DISABLE_LEGACY_CPU_PERFORMANCE=1 to disable it with backup\n' "$LEGACY_SERVICE"
+            printf 'left existing %s service intact; set POWER_PROFILE_DISABLE_LEGACY_CPU_PERFORMANCE=1 to disable it with backup\n' "$LEGACY_SERVICE"
         fi
         return 0
     }
@@ -65,7 +65,7 @@ disable_legacy_service() {
 }
 
 as_root install -d -m 755 "$SERVICE_DIR"
-as_root install -m 755 "$DOTFILES_DIR/system/etc/sv/srl-power-profile/run" "$SERVICE_DIR/run"
+as_root install -m 755 "$DOTFILES_DIR/system/etc/sv/power-profile/run" "$SERVICE_DIR/run"
 install_default_config
 disable_legacy_service
 
@@ -73,11 +73,11 @@ if [ -d /etc/sv/thermald ] && [ ! -e /var/service/thermald ]; then
     as_root ln -s /etc/sv/thermald /var/service/
 fi
 
-if [ ! -e /var/service/srl-power-profile ]; then
-    as_root ln -s /etc/sv/srl-power-profile /var/service/
+if [ ! -e /var/service/power-profile ]; then
+    as_root ln -s /etc/sv/power-profile /var/service/
 fi
 
 as_root sv up thermald >/dev/null 2>&1 || true
-as_root sv restart srl-power-profile >/dev/null 2>&1 || as_root sv up srl-power-profile >/dev/null 2>&1 || true
+as_root sv restart power-profile >/dev/null 2>&1 || as_root sv up power-profile >/dev/null 2>&1 || true
 
-printf 'installed SRL power profile\n'
+printf 'installed power profile\n'

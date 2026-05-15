@@ -8,7 +8,7 @@
 # usbcore.autosuspend=-1 and usbcore.quirks are set in kernel cmdline.
 # These rules cover runtime power control + driver-bind races.
 
-ACTION!="add", ACTION!="change", ACTION!="bind", GOTO="srl_usb_input_power_end"
+ACTION!="add", ACTION!="change", ACTION!="bind", GOTO="usb_input_power_end"
 
 # USB hubs — disable autosuspend, cover add and change (driver may reset power/control on bind).
 ACTION=="add|change", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="09", \
@@ -34,4 +34,4 @@ ACTION=="bind", SUBSYSTEM=="hid", \
   KERNELS=="*046d:c08b*", \
   RUN+="/bin/sh -c 'echo on > /sys%p/../power/control 2>/dev/null || true'"
 
-LABEL="srl_usb_input_power_end"
+LABEL="usb_input_power_end"

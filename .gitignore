@@ -9,6 +9,9 @@ services/runit-enabled.txt
 *.swp
 *.swo
 
+# Host-specific scripts with sensitive data (real IPs, credentials)
+hosts/desktop-srl/scripts/ru-vps-restore.sh
+
 # Never commit private runtime state here.
 **/.ssh/**
 **/.gnupg/**
