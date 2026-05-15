@@ -4,9 +4,9 @@ set -euo pipefail
 # UP or DOWN — updates cache immediately (widget refreshes instantly),
 # then applies to monitors only after scrolling stops.
 
-CACHE="/tmp/waybar_brightness"
-LOCK="/tmp/waybar_brightness.lock"
-TOKEN_FILE="/tmp/waybar_brightness_token"
+CACHE="${XDG_RUNTIME_DIR:-/tmp}/waybar_brightness"
+LOCK="${XDG_RUNTIME_DIR:-/tmp}/waybar_brightness.lock"
+TOKEN_FILE="${XDG_RUNTIME_DIR:-/tmp}/waybar_brightness_token"
 STEP=5
 DEBOUNCE_SECONDS="${BRIGHTNESS_DEBOUNCE_SECONDS:-0.45}"
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

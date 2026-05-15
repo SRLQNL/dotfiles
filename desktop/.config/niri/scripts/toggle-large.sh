@@ -22,8 +22,10 @@ if [[ "$IS_FLOATING" != "true" ]] \
     && (( OUTPUT_W > 0 && OUTPUT_H > 0 )) \
     && (( TILE_W_INT == OUTPUT_W && TILE_H_INT == OUTPUT_H )); then
     niri msg action fullscreen-window
+    sleep 0.05
     niri msg action set-column-width "100%"
     niri msg action reset-window-height
+    niri msg action center-column
     exit 0
 fi
 
@@ -31,6 +33,7 @@ if [[ "$IS_FLOATING" == "true" ]]; then
     PREV_COL=$(cat "$STATE_FILE" 2>/dev/null)
     rm -f "$STATE_FILE"
     niri msg action move-window-to-tiling
+    sleep 0.05
     niri msg action set-column-width "100%"
     niri msg action reset-window-height
 
@@ -63,7 +66,6 @@ if (( TILE_W_INT >= THRESHOLD )); then
     printf "%.0f" "$PREV_COL" > "$STATE_FILE"
 
     niri msg action move-window-to-floating
-    niri msg action set-column-width "${FLOAT_PCT}%"
     niri msg action set-window-height "${FLOAT_PCT}%"
     niri msg action center-window
 else

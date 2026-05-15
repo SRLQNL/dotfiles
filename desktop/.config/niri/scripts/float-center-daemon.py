@@ -10,7 +10,7 @@ import sys
 import threading
 import time
 
-QUIET_DELAY_SECONDS = 0.08
+QUIET_DELAY_SECONDS = 0.15
 
 handled = set()
 pending = {}

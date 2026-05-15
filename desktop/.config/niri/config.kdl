@@ -600,6 +600,7 @@ layer-rule {
 
 window-rule {
     match app-id=r#"pavucontrol"#
+    open-floating true
 }
 
 window-rule {
@@ -611,6 +612,7 @@ window-rule {
 
 window-rule {
     match app-id=r#"blueman-manager"#
+    open-floating true
 }
 
 
@@ -620,9 +622,6 @@ window-rule {
     opacity 0.97
 }
 
-window-rule {
-    match app-id="foot"
-}
 
 window-rule {
     match app-id=r#"org\.telegram\.desktop"# title="Просмотр медиа"

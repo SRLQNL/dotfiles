@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-DDC_LOCK="${DDC_LOCK:-/tmp/waybar_ddcutil.lock}"
-DDC_BUSES_CACHE="${DDC_BUSES_CACHE:-/tmp/waybar_ddcutil_buses}"
+DDC_LOCK="${DDC_LOCK:-${XDG_RUNTIME_DIR:-/tmp}/waybar_ddcutil.lock}"
+DDC_BUSES_CACHE="${DDC_BUSES_CACHE:-${XDG_RUNTIME_DIR:-/tmp}/waybar_ddcutil_buses}"
 DDC_BUSES_CACHE_TTL="${DDC_BUSES_CACHE_TTL:-3600}"
 DDC_SET_SLEEP_MULTIPLIER="${DDC_SET_SLEEP_MULTIPLIER:-0}"
 

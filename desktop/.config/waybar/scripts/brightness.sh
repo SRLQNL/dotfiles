@@ -4,7 +4,7 @@ set -euo pipefail
 # Reads brightness from cache (populated by brightness-set.sh on scroll).
 # Falls back to current DDC brightness across connected displays.
 
-CACHE="/tmp/waybar_brightness"
+CACHE="${XDG_RUNTIME_DIR:-/tmp}/waybar_brightness"
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/brightness-ddc.sh"
