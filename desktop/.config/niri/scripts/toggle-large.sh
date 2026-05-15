@@ -25,6 +25,13 @@ if [[ "$IS_FLOATING" != "true" ]] \
     && (( WIN_W == OUTPUT_W && WIN_H == OUTPUT_H )); then
     niri msg action fullscreen-window
     sleep 0.05
+    # niri restores pre-fullscreen state: if window was floating before going
+    # fullscreen, it returns to floating here. Always land in maximized tiling.
+    IS_NOW_FLOATING=$(niri msg --json focused-window | jq -r '.is_floating')
+    if [[ "$IS_NOW_FLOATING" == "true" ]]; then
+        niri msg action move-window-to-tiling
+        sleep 0.05
+    fi
     niri msg action set-column-width "100%"
     niri msg action reset-window-height
     niri msg action center-column

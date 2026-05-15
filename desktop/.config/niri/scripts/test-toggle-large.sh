@@ -51,11 +51,11 @@ echo "=== toggle-large.sh logic tests ==="
 echo ""
 
 echo "-- Fullscreen detection --"
-# window_size == output => fullscreen, regardless of tile_size
 check "fullscreen: WIN==OUTPUT → unfullscreen" \
     "unfullscreen" "$(detect_branch false $OW $OH $OW $OW $OH)"
-# REGRESSION: old code used tile_size which equals tiling-area size when fullscreen
-check "regression: tile_size=tiling-area but WIN==OUTPUT → still unfullscreen" \
+# REGRESSION #1: old code used tile_size == OUTPUT which fails because niri
+# reports tile_size as tiling-area size (≈1880) even when fullscreen
+check "regression#1: tile_size=tiling-area but WIN==OUTPUT → still unfullscreen" \
     "unfullscreen" "$(detect_branch false $OW $OH $TW $OW $OH)"
 
 echo ""
@@ -73,8 +73,6 @@ check "threshold boundary: exactly 85% wide → float" \
     "tiling_to_float" "$(detect_branch false $OW $OH $(( OW * 85 / 100 )) $(( OW * 85 / 100 )) 600)"
 check "threshold boundary: 84% wide → expand" \
     "expand_to_full" "$(detect_branch false $OW $OH $(( OW * 84 / 100 )) $(( OW * 84 / 100 )) 600)"
-# Script uses '// 1920' fallback so OUTPUT_W is never 0; this tests the
-# case where output returns 0 height only (fullscreen branch guard holds).
 check "zero output height only → fullscreen guard fails → check tile threshold" \
     "tiling_to_float" "$(detect_branch false $OW 0 $TW $OW $OH)"
 
