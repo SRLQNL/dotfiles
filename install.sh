@@ -554,6 +554,27 @@ apply_usb_input_power_fix() {
 }
 
 # ============================================================
+# System-level: niri SDDM session
+# ============================================================
+
+apply_niri_sddm_session() {
+    info "=== niri SDDM session ==="
+    src_bin="$DOTFILES_DIR/system/usr/local/bin/niri-sddm-session"
+    src_desktop="$DOTFILES_DIR/system/usr/share/wayland-sessions/niri.desktop"
+
+    if [ "$DRY_RUN" = "1" ]; then
+        info "[dry-run] would install /usr/local/bin/niri-sddm-session"
+        info "[dry-run] would install /usr/share/wayland-sessions/niri.desktop"
+        return 0
+    fi
+
+    confirm "Install niri SDDM session script and .desktop? (requires root)" || return 0
+    dry_root install -m 755 "$src_bin" /usr/local/bin/niri-sddm-session
+    dry_root install -d -m 755 /usr/share/wayland-sessions
+    dry_root install -m 644 "$src_desktop" /usr/share/wayland-sessions/niri.desktop
+}
+
+# ============================================================
 # System-level: runit services
 # ============================================================
 
@@ -803,6 +824,7 @@ main() {
     if [ "$SKIP_SYSTEM" = "0" ]; then
         info "--- System configuration ---"
         apply_grub
+        apply_niri_sddm_session
         apply_usb_input_power_fix
         apply_power_profile
         apply_nvidia_wayland_profile

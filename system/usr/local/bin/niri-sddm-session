@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=niri
+export DESKTOP_SESSION=niri
+
+udevadm settle --timeout=5
+exec dbus-run-session -- niri --session
