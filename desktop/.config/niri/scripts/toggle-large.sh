@@ -12,15 +12,17 @@ IS_FLOATING=$(echo "$WINDOW_INFO" | jq -r '.is_floating')
 STATE_FILE="${XDG_RUNTIME_DIR:-/tmp}/niri_float_col_${WINDOW_ID}"
 
 TILE_W=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[0] // 0')
-TILE_H=$(echo "$WINDOW_INFO" | jq -r '.layout.tile_size[1] // 0')
 TILE_W_INT=$(printf "%.0f" "$TILE_W")
-TILE_H_INT=$(printf "%.0f" "$TILE_H")
+# window_size is the actual rendered size: fullscreen = full output, tiling = output-struts-gaps-panels
+WIN_W=$(echo "$WINDOW_INFO" | jq -r '.layout.window_size[0] // 0')
+WIN_H=$(echo "$WINDOW_INFO" | jq -r '.layout.window_size[1] // 0')
 
-# True fullscreen occupies the whole logical output; a maximized column still
-# leaves gaps/struts and must be handled by the large-window branch below.
+# Detect fullscreen via window_size == output size. tile_size is unreliable for this:
+# when fullscreen niri may still report tile_size as the tiling-area size (output minus
+# struts/gaps/panels), which equals a maximized-tiling window and causes false negatives.
 if [[ "$IS_FLOATING" != "true" ]] \
     && (( OUTPUT_W > 0 && OUTPUT_H > 0 )) \
-    && (( TILE_W_INT == OUTPUT_W && TILE_H_INT == OUTPUT_H )); then
+    && (( WIN_W == OUTPUT_W && WIN_H == OUTPUT_H )); then
     niri msg action fullscreen-window
     sleep 0.05
     niri msg action set-column-width "100%"
