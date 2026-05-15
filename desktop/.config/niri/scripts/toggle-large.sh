@@ -66,6 +66,7 @@ if (( TILE_W_INT >= THRESHOLD )); then
     printf "%.0f" "$PREV_COL" > "$STATE_FILE"
 
     niri msg action move-window-to-floating
+    niri msg action set-column-width "${FLOAT_PCT}%"
     niri msg action set-window-height "${FLOAT_PCT}%"
     niri msg action center-window
 else
