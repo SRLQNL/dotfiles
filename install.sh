@@ -504,7 +504,7 @@ apply_grub() {
 apply_power_profile() {
     [ "$INSTALL_POWER_PROFILE" = "1" ] || return 0
     info "=== Power profile service ==="
-    [ "$DRY_RUN" = "0" ] && confirm "Install srl-power-profile runit service? (requires root)" || {
+    [ "$DRY_RUN" = "0" ] && confirm "Install power-profile runit service? (requires root)" || {
         info "[dry-run] would install power profile service"
         return 0
     }
@@ -544,7 +544,7 @@ apply_nvidia_wayland_profile() {
 apply_usb_input_power_fix() {
     [ "${INSTALL_USB_INPUT_POWER_FIX:-0}" = "1" ] || return 0
     info "=== USB input power fix ==="
-    usb_input_power_rule="$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-srl-usb-input-power.rules"
+    usb_input_power_rule="$DOTFILES_DIR/hosts/$HOSTNAME_KEY/system/etc/udev/rules.d/99-usb-input-power.rules"
     [ -r "$usb_input_power_rule" ] || die "USB input power rule not found: $usb_input_power_rule"
     [ "$DRY_RUN" = "0" ] && confirm "Install USB input power udev rule? (requires root)" || {
         info "[dry-run] would install USB input power udev rule: $usb_input_power_rule"
@@ -814,6 +814,11 @@ main() {
         apply_stow "$INSTALL_STOW_PACKAGES"
     else
         info "--- Skipping stow (--skip-stow) ---"
+    fi
+
+    if [ "$INSTALL_STEAM" = "1" ]; then
+        log "Running Steam Homebrew setup..."
+        bash "$DOTFILES_DIR/scripts/install-steam-homebrew.sh"
     fi
 
     # 3. Host overlay (niri outputs, session env)

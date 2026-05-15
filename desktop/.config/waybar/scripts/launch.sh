@@ -43,6 +43,7 @@ done
 export NIRI_SOCKET
 
 # Generate config from template
+[ -n "$NIRI_PRIMARY_OUTPUT" ] || { printf 'ERROR: NIRI_PRIMARY_OUTPUT is not set\n' >&2; exit 1; }
 envsubst < "$WAYBAR_TMPL" > "$WAYBAR_CFG"
 
 # On single-monitor setup, drop the second bar

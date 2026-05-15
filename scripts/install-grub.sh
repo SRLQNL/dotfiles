@@ -98,6 +98,7 @@ merge_cmdline_default() {
 
 merge_grub_defaults() {
     merge_defaults_tmp=$(mktemp)
+    trap 'rm -f "$merge_defaults_tmp"' EXIT
     if [ -e /etc/default/grub ]; then
         cp /etc/default/grub "$merge_defaults_tmp"
     else

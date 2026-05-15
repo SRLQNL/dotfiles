@@ -4,3 +4,7 @@
 # Runtime Python bytecode should never be linked into $HOME.
 __pycache__
 .*\.pyc
+
+# Waybar runtime/generated files.
+waybar/save
+waybar/modules\.json
