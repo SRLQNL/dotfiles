@@ -42,7 +42,9 @@ brightnessctl
 ddcutil
 wlr-randr
 playerctl
-awww
+# awww — не в официальных репозиториях xbps. Установи вручную:
+# https://github.com/heapbytes/awww или через собственную сборку
+# awww
 
 # Shell / CLI tools
 zsh

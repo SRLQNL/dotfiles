@@ -125,6 +125,11 @@ install_void_steam() {
 }
 
 setup_steam_paths() {
+    STEAM_PARENT="$(dirname "$STEAM_DATA_DIR")"
+    if [ ! -d "$STEAM_PARENT" ]; then
+        printf 'WARN: Parent directory %s does not exist — %s may be created on wrong filesystem\n' \
+            "$STEAM_PARENT" "$STEAM_DATA_DIR" >&2
+    fi
     mkdir -p "$HOME/.local/share" "$HOME/.steam" "$STEAM_DATA_DIR" "$STEAM_LIBRARY_DIR"
     ln -sfn "$STEAM_DATA_DIR" "$HOME/.local/share/Steam"
     ln -sfn "$STEAM_DATA_DIR" "$HOME/.steam/steam"

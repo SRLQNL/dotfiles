@@ -4,5 +4,5 @@
 # Syntax: simple KEY=VAL pairs on separate lines.
 #
 EDITOR=vim
-BROWSER=vivaldi-stable
+BROWSER=${BROWSER:-xdg-open}
 TERMINAL=foot

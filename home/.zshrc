@@ -116,8 +116,8 @@ rehash_precmd() {
 add-zsh-hook -Uz precmd rehash_precmd
 
 # omz
-alias zshconfig="geany ~/.zshrc"
-alias ohmyzsh="thunar ~/.oh-my-zsh"
+alias zshconfig="${EDITOR:-nano} ~/.zshrc"
+alias ohmyzsh="${FILE_MANAGER:-xdg-open} ~/.oh-my-zsh"
 
 # ls
 alias l='ls -lh'
@@ -136,17 +136,19 @@ alias gp='git push'
 
 
 
-export PATH=$PATH:$HOME/.spicetify
+[ -d "$HOME/.spicetify" ] && export PATH=$PATH:$HOME/.spicetify
 
 # SSH agent auto-start
 if command -v ssh-agent >/dev/null 2>&1 && [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)" > /dev/null
-    [ -r "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519" 2>/dev/null
+    for _k in id_ed25519 id_rsa id_ecdsa; do [ -r "$HOME/.ssh/$_k" ] && ssh-add "$HOME/.ssh/$_k" 2>/dev/null; done; unset _k
 fi
 
 # dotnet
-export DOTNET_ROOT="$HOME/.dotnet"
-export PATH="$PATH:$HOME/.dotnet:$HOME/.dotnet/tools"
+if [ -d "$HOME/.dotnet" ]; then
+  export DOTNET_ROOT="$HOME/.dotnet"
+  export PATH="$PATH:$HOME/.dotnet:$HOME/.dotnet/tools"
+fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # ── modern cli tools ──────────────────────────────────────────────────────────

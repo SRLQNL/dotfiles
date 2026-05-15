@@ -6,7 +6,7 @@ if pgrep -x fuzzel > /dev/null; then
     exit 0
 fi
 
-WALLPAPER_DIR="$HOME/wallpapers"
+WALLPAPER_DIR="${WALLPAPER_DIR:-$HOME/wallpapers}"
 PERSISTENCE_FILE="$HOME/.config/niri/last_wallpaper.txt"
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 

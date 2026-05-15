@@ -54,7 +54,6 @@ dotfiles/
 │
 ├── packages/
 │   ├── void-base.txt   # Default Void+niri package set
-│   ├── void-desktop.txt # Legacy split reference; not installed by default
 │   ├── void-nvidia.txt # 32-bit NVIDIA/Vulkan libs (Steam + Proton)
 │   ├── void-gaming.txt # Steam, mono
 │   └── void-laptop.txt # Battery/power tools for laptops

@@ -1,16 +1,18 @@
 #!/bin/bash
-# Host-specific emergency restore for RU VPS (193.124.67.5).
+# Host-specific emergency restore for RU VPS.
 # Run as root via hosting console if SSH/Caddy is broken
+# Чувствительные данные: задай переменные в host.env (не коммить туда IP!)
 
 set -e
 
-WAN_IF=ens3
-WAN_IP=193.124.67.5
-WAN_GW=193.124.67.1
-WG_IF=wg-se
-WG_LOCAL=10.66.0.2
-SE_IP=5.183.101.190
-CADDY_UID=998
+# Настроить в host.env или передать как переменные окружения
+WAN_IF="${RU_VPS_WAN_IF:?set RU_VPS_WAN_IF in host.env}"
+WAN_IP="${RU_VPS_WAN_IP:?set RU_VPS_WAN_IP in host.env}"
+WAN_GW="${RU_VPS_WAN_GW:?set RU_VPS_WAN_GW in host.env}"
+WG_IF="${RU_VPS_WG_IF:-wg-se}"
+WG_LOCAL="${RU_VPS_WG_LOCAL:?set RU_VPS_WG_LOCAL in host.env}"
+SE_IP="${SE_VPS_IP:?set SE_VPS_IP in host.env}"
+CADDY_UID="${RU_VPS_CADDY_UID:-998}"
 CONFIRM=${RU_VPS_RESTORE_CONFIRM:-}
 SKIP_IP_CHECK=${RU_VPS_RESTORE_SKIP_IP_CHECK:-0}
 
