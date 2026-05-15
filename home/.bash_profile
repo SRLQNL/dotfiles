@@ -1,3 +1,3 @@
 # .bash_profile
 
-[ -f $HOME/.bashrc ] && . $HOME/.bashrc
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"

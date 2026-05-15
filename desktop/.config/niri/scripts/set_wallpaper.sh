@@ -45,4 +45,4 @@ if [[ -n "$OUTPUT" ]]; then
     echo "$WALLPAPER_PATH" > "${PERSISTENCE_FILE%.txt}_${OUTPUT}.txt"
 fi
 echo "$WALLPAPER_PATH" > "$PERSISTENCE_FILE"
-notify-send "Wallpaper" "[$OUTPUT] Set: $SELECTED"
+notify-send "Wallpaper" "[${OUTPUT:-all outputs}] Set: $SELECTED"

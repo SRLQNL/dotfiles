@@ -54,7 +54,8 @@
     "custom/player": {
         "exec": "~/.config/waybar/scripts/cider.sh",
         "return-type": "json",
-        "interval": 2,
+        "interval": 3,
+        "timeout": 3,
         "on-click": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') play-pause",
         "on-click-right": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') next",
         "tooltip": true,
@@ -118,6 +119,7 @@
         "return-type": "json",
         "interval": 30,
         "signal": 11,
+        "timeout": 4,
         "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${LOCK_TOP_OUTPUT} toggle",
         "tooltip": true
     },
@@ -126,6 +128,7 @@
         "return-type": "json",
         "interval": 30,
         "signal": 11,
+        "timeout": 4,
         "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${LOCK_BOTTOM_OUTPUT} toggle",
         "tooltip": true
     },
@@ -215,7 +218,8 @@
     "custom/player": {
         "exec": "~/.config/waybar/scripts/cider.sh",
         "return-type": "json",
-        "interval": 2,
+        "interval": 3,
+        "timeout": 3,
         "on-click": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') play-pause",
         "on-click-right": "playerctl --player=$(cat ${XDG_RUNTIME_DIR:-/tmp}/waybar_active_player 2>/dev/null || echo '%any') next",
         "tooltip": true,
@@ -279,6 +283,7 @@
         "return-type": "json",
         "interval": 30,
         "signal": 11,
+        "timeout": 4,
         "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${LOCK_TOP_OUTPUT} toggle",
         "tooltip": true
     },
@@ -287,6 +292,7 @@
         "return-type": "json",
         "interval": 30,
         "signal": 11,
+        "timeout": 4,
         "on-click": "~/.config/waybar/scripts/monitor-toggle.sh ${LOCK_BOTTOM_OUTPUT} toggle",
         "tooltip": true
     },

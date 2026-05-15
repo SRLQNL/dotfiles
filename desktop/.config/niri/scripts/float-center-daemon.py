@@ -110,36 +110,46 @@ def action_worker():
 lock_file = take_lock()
 threading.Thread(target=action_worker, daemon=True).start()
 
-proc = subprocess.Popen(
-    ["niri", "msg", "--json", "event-stream"],
-    stdout=subprocess.PIPE,
-    text=True,
-)
+while True:
+    proc = subprocess.Popen(
+        ["niri", "msg", "--json", "event-stream"],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
 
-for line in proc.stdout:
-    line = line.strip()
-    if not line:
-        continue
-    try:
-        event = json.loads(line)
-    except json.JSONDecodeError:
-        continue
-
-    if "WindowOpenedOrChanged" in event:
-        win = event["WindowOpenedOrChanged"]["window"]
-        win_id = win["id"]
-        with pending_cv:
-            already_handled = win_id in handled
-        if already_handled:
+    for line in proc.stdout:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
             continue
 
-        actions = actions_for_window(win)
-        if actions:
-            schedule(win_id, actions)
-        else:
-            cancel(win_id)
+        if "WindowOpenedOrChanged" in event:
+            win = event["WindowOpenedOrChanged"]["window"]
+            win_id = win["id"]
+            with pending_cv:
+                already_handled = win_id in handled
+            if already_handled:
+                continue
 
-    elif "WindowClosed" in event:
-        win_id = event["WindowClosed"].get("id")
-        if win_id:
-            cancel(win_id)
+            actions = actions_for_window(win)
+            if actions:
+                schedule(win_id, actions)
+            else:
+                cancel(win_id)
+
+        elif "WindowClosed" in event:
+            win_id = event["WindowClosed"].get("id")
+            if win_id:
+                cancel(win_id)
+
+    proc.wait()
+    # niri event-stream ended (config reload or compositor restart);
+    # clear stale window state and reconnect after a brief pause.
+    with pending_cv:
+        handled.clear()
+        pending.clear()
+        pending_cv.notify_all()
+    time.sleep(1)
