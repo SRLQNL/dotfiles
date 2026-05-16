@@ -598,6 +598,54 @@ enable_runit_services() {
 }
 
 # ============================================================
+# System-level: modules-load.d configs
+# ============================================================
+
+apply_modules_load() {
+    src_dir="$DOTFILES_DIR/system/etc/modules-load.d"
+    dst_dir="/etc/modules-load.d"
+    [ -d "$src_dir" ] || return 0
+
+    info "=== modules-load.d ==="
+    for src in "$src_dir"/*.conf; do
+        [ -f "$src" ] || continue
+        fname="${src##*/}"
+        dst="$dst_dir/$fname"
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run] would install: $dst"
+        else
+            dry_root install -d -m 755 "$dst_dir"
+            dry_root install -m 644 "$src" "$dst"
+            info "  installed: $dst"
+        fi
+    done
+}
+
+# ============================================================
+# System-level: user group membership
+# ============================================================
+
+apply_user_groups() {
+    [ "$SKIP_SYSTEM" = "0" ] || return 0
+
+    INSTALL_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+    info "=== User group membership (user: $INSTALL_USER) ==="
+
+    if [ "$DRY_RUN" = "1" ]; then
+        info "[dry-run] would run: usermod -aG i2c $INSTALL_USER"
+        return 0
+    fi
+
+    # i2c group — required for ddcutil DDC/CI access without sudo
+    if getent group i2c >/dev/null 2>&1; then
+        dry_root usermod -aG i2c "$INSTALL_USER"
+        info "  added $INSTALL_USER to group: i2c"
+    else
+        warn "  group 'i2c' not found, skipping (load i2c-dev module first)"
+    fi
+}
+
+# ============================================================
 # Validation
 # ============================================================
 
@@ -833,7 +881,9 @@ main() {
         apply_usb_input_power_fix
         apply_power_profile
         apply_nvidia_wayland_profile
+        apply_modules_load
         enable_runit_services
+        apply_user_groups
     else
         info "--- Skipping system config (--skip-system) ---"
     fi
