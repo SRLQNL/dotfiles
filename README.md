@@ -87,7 +87,7 @@ Or pass on the command line:
 | `laptop` | Battery tools, power-saving CPU defaults |
 | `steam` | Steam + gaming packages, configurable data paths |
 | `grub-themed` | MilkGrub theme, GRUB display mode |
-| `power-profile` | srl-power-profile runit service (CPU/GPU power caps) |
+| `power-profile` | custom runit service for CPU governor and GPU power cap |
 
 Package files are accumulated in `INSTALL_PACKAGES_FILE`. `profiles/base.env`
 sets the default to `packages/void-base.txt`; feature profiles append their own
