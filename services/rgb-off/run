@@ -1,8 +1,8 @@
 #!/bin/sh
 exec 2>&1
-# Wait for any i2c device to appear (bus number varies by hardware)
-for i in $(seq 1 10); do
-    ls /dev/i2c-* >/dev/null 2>&1 && break
+# Wait for SMBus adapter to appear (needed for RAM RGB, not monitor DDC/CI i2c buses)
+for i in $(seq 1 15); do
+    grep -ql 'smbus\|SMBus' /sys/bus/i2c/devices/*/name 2>/dev/null && break
     sleep 1
 done
 openrgb --noautoconnect --device 0 --mode Off >/dev/null 2>&1 || true
