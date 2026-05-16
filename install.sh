@@ -468,6 +468,42 @@ apply_host_overlay() {
         mkdir -p "$(dirname -- "$target")"
         [ -e "$target" ] || : > "$target"
     fi
+
+    # Host etc/ overlay — install root-owned config files from hosts/$HOSTNAME/etc/
+    # into /etc/, substituting $INSTALL_USER placeholder for the actual username.
+    apply_host_etc "$hostname_key"
+}
+
+apply_host_etc() {
+    hostname_key=$1
+    src_etc="$DOTFILES_DIR/hosts/$hostname_key/etc"
+    [ -d "$src_etc" ] || return 0
+
+    INSTALL_USER="${SUDO_USER:-${USER:-$(id -un)}}"
+    info "=== Host /etc overlay ($hostname_key, user=$INSTALL_USER) ==="
+
+    # Collect files first to avoid piping stdin (confirm() reads from stdin)
+    etc_files=$(find "$src_etc" -type f 2>/dev/null || true)
+    [ -n "$etc_files" ] || return 0
+
+    printf '%s\n' "$etc_files" | while IFS= read -r src; do
+        [ -f "$src" ] || continue
+        rel="${src#"$src_etc/"}"
+        dst="/etc/$rel"
+        dst_dir="$(dirname -- "$dst")"
+
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run] would install: $dst (with username substitution: srl -> $INSTALL_USER)"
+        else
+            tmp=$(mktemp)
+            # Substitute literal "srl" username placeholder with actual username
+            sed "s/\\bsrl\\b/$INSTALL_USER/g" "$src" > "$tmp"
+            dry_root install -d -m 755 "$dst_dir"
+            dry_root install -m 644 "$tmp" "$dst"
+            rm -f "$tmp"
+            info "  installed: $dst"
+        fi
+    done
 }
 
 # ============================================================
@@ -870,7 +906,7 @@ main() {
     fi
 
     if [ "$INSTALL_STEAM" = "1" ]; then
-        log "Running Steam Homebrew setup..."
+        info "Running Steam Homebrew setup..."
         bash "$DOTFILES_DIR/scripts/install-steam-homebrew.sh"
     fi
 

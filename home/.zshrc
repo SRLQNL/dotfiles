@@ -98,22 +98,7 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# On-demand rehash
-zshcache_time="$(date +%s%N)"
-
 autoload -Uz add-zsh-hook
-
-rehash_precmd() {
-  if [[ -a /var/cache/zsh/pacman ]]; then
-    local paccache_time="$(date -r /var/cache/zsh/pacman +%s%N)"
-    if (( zshcache_time < paccache_time )); then
-      rehash
-      zshcache_time="$paccache_time"
-    fi
-  fi
-}
-
-add-zsh-hook -Uz precmd rehash_precmd
 
 # omz
 alias zshconfig="${EDITOR:-nano} ~/.zshrc"
@@ -182,12 +167,12 @@ if command -v starship &>/dev/null; then
   eval "$(starship init zsh)"
 fi
 
+# zoxide (smarter cd) — must be after prompt init, before fastfetch
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
 # fastfetch at terminal start (only in interactive, non-tmux)
 if command -v fastfetch &>/dev/null && [[ -z "$TMUX" ]]; then
   fastfetch
-fi
-
-# zoxide (smarter cd) — must be last in zshrc
-if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
 fi
