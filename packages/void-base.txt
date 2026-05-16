@@ -76,3 +76,4 @@ noto-fonts-ttf-extra
 noto-fonts-cjk
 noto-fonts-emoji
 network-manager-applet
+openrgb

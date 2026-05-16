@@ -585,7 +585,12 @@ enable_runit_services() {
 
     while IFS= read -r service; do
         case "$service" in ''|'#'*) continue ;; esac
-        if [ ! -d "/etc/sv/$service" ]; then
+        svc_src="$DOTFILES_DIR/services/$service"
+        if [ ! -d "/etc/sv/$service" ] && [ -d "$svc_src" ]; then
+            dry_root cp -r "$svc_src" "/etc/sv/$service"
+            dry_root chmod +x "/etc/sv/$service/run" 2>/dev/null || true
+            info "installed service: $service → /etc/sv/$service"
+        elif [ ! -d "/etc/sv/$service" ]; then
             warn "service not installed, skip: $service"
             continue
         fi

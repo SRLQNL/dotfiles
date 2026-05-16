@@ -1,0 +1,9 @@
+#!/bin/sh
+exec 2>&1
+for i in $(seq 1 10); do
+    [ -e /dev/i2c-6 ] && break
+    sleep 1
+done
+openrgb --noautoconnect --device 0 --mode Off >/dev/null 2>&1 || true
+openrgb --noautoconnect --device 1 --mode Off >/dev/null 2>&1 || true
+exec sleep infinity
