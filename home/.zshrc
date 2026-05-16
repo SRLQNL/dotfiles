@@ -182,12 +182,12 @@ if command -v starship &>/dev/null; then
   eval "$(starship init zsh)"
 fi
 
-# zoxide (smarter cd) — after prompt init
-if command -v zoxide &>/dev/null; then
-  eval "$(zoxide init zsh --cmd cd)"
-fi
-
 # fastfetch at terminal start (only in interactive, non-tmux)
 if command -v fastfetch &>/dev/null && [[ -z "$TMUX" ]]; then
   fastfetch
+fi
+
+# zoxide (smarter cd) — must be last in zshrc
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh --cmd cd)"
 fi
