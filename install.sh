@@ -469,6 +469,23 @@ apply_host_overlay() {
         [ -e "$target" ] || : > "$target"
     fi
 
+    # Host stow packages — any directory in hosts/$hostname/ that isn't a reserved name
+    # is treated as a stow package and linked to $HOME.
+    # Reserved dirs: etc, system, scripts, niri-outputs.kdl (file, not dir)
+    for pkg_dir in "$host_dir"/*/; do
+        [ -d "$pkg_dir" ] || continue
+        pkg_name=$(basename -- "$pkg_dir")
+        case "$pkg_name" in
+            etc|system|scripts) continue ;;
+        esac
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run]   stow --no-folding --restow --dir='$host_dir' $pkg_name"
+        else
+            stow --no-folding --restow --dir="$host_dir" --target="$HOME" "$pkg_name"
+            info "host stow: $pkg_name"
+        fi
+    done
+
     # Host etc/ overlay — install root-owned config files from hosts/$HOSTNAME/etc/
     # into /etc/, substituting $INSTALL_USER placeholder for the actual username.
     apply_host_etc "$hostname_key"

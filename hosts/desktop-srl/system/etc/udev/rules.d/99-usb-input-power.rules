@@ -5,6 +5,9 @@
 # - 046d:c08b Logitech G502 HERO Gaming Mouse
 # Hub chain: ASM1074 (174c:2074) → VIA Labs USB2.0 (2109:2817) → devices
 #
+# NEW MACHINE: Replace VID:PID values above and below with your own devices.
+# Find them with: lsusb  (format: ID VVVV:PPPP Manufacturer Device)
+#
 # usbcore.autosuspend=-1 and usbcore.quirks are set in kernel cmdline.
 # These rules cover runtime power control + driver-bind races.
 
