@@ -1,0 +1,24 @@
+// Host-specific niri output configuration — copy to hosts/<hostname>/niri-outputs.kdl
+// Run `niri msg outputs` to see available output names and supported modes.
+//
+// Single monitor (laptop built-in):
+// output "eDP-1" {
+//     mode "1920x1080@60"
+//     scale 1
+//     transform "normal"
+//     position x=0 y=0
+// }
+//
+// Dual monitor (desktop, side-by-side):
+// output "DP-1" {
+//     mode "1920x1080@144"
+//     scale 1
+//     transform "normal"
+//     position x=0 y=0
+// }
+// output "DP-2" {
+//     mode "1920x1080@144"
+//     scale 1
+//     transform "normal"
+//     position x=1920 y=0
+// }

@@ -3,7 +3,6 @@
 # Battery / power info
 acpi
 tlp
-thermald
 
 # Touchpad / input extras
 xf86-input-libinput

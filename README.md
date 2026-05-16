@@ -190,14 +190,12 @@ USB keyboard/mouse boot reliability:
 Lock behavior: top monitor disables on lock, restores on unlock.
 Configure output names via `LOCK_TOP_OUTPUT` / `LOCK_BOTTOM_OUTPUT` in `host.env`.
 
-`workspace-cap-daemon.py` creates `b1..b5` workspaces dynamically while `DP-2` is
-connected, and merges them back to `1..5` when only one output is present.
 
 ### Laptop (profile: laptop)
 
 - CPU: `powersave` governor + `power` EPP
 - GPU power cap disabled
-- Extra packages: `acpi`, `tlp`, `thermald`
+- Extra packages: `acpi`, `tlp`
 
 ### Steam (profile: steam)
 
