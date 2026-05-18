@@ -1,4 +1,5 @@
 // Host-specific niri output configuration — copy to hosts/<hostname>/niri-outputs.kdl
+// REQUIRED: uncomment one block below matching your setup and adjust names/modes.
 // Run `niri msg outputs` to see available output names and supported modes.
 //
 // Single monitor (laptop built-in):

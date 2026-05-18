@@ -1,0 +1,9 @@
+# Host-specific runit services to enable (one per line, no path prefix).
+# install.sh will symlink these from /etc/sv/ to /var/service/.
+#
+# Example:
+#   sshd
+#   cups
+#
+# Note: the base services list is in services/runit-enabled.txt.
+# Add only machine-specific extras here.

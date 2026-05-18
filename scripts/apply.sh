@@ -81,11 +81,6 @@ for package in $PACKAGES; do
     stow --dir="$DOTFILES_DIR" --target="$TARGET_HOME" --no-folding --ignore='^\.config/niri/outputs-host\.kdl$' --restow "$package"
 done
 
-if [ -e "$mime_src" ] && [ -L "$mime_target" ] && [ "$(readlink -f -- "$mime_target" 2>/dev/null || true)" = "$mime_src" ]; then
-    mkdir -p "$(dirname -- "$mime_target")"
-    ln -sfn -- "$mime_src" "$mime_target"
-fi
-
 printf 'applied packages: %s\n' "$PACKAGES"
 if [ -d "$BACKUP_ROOT" ]; then
     printf 'conflict backups: %s\n' "$BACKUP_ROOT"
