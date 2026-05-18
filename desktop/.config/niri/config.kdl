@@ -567,6 +567,8 @@ binds {
 	// Mod+Shift+B { spawn-sh "$HOME/.config/niri/scripts/profile_switcher.sh"; }
 }
 
+spawn-at-startup "/usr/libexec/xdg-desktop-portal-gtk"
+spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
 spawn-at-startup "pipewire-pulse"

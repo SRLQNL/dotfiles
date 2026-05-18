@@ -23,7 +23,7 @@ void-repo-multilib-nonfree
 # niri Wayland desktop
 niri
 xwayland-satellite
-xdg-desktop-portal-gnome
+xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
 Waybar
