@@ -177,6 +177,7 @@ if command -v fastfetch &>/dev/null && [[ -z "$TMUX" ]]; then
 fi
 
 # zoxide (smarter cd) — must be at the very end of .zshrc
+export _ZO_DOCTOR=0
 if command -v zoxide &>/dev/null; then
   eval "$(zoxide init zsh --cmd cd)"
 fi
