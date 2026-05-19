@@ -7,5 +7,9 @@ GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR="Void"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet loglevel=3 udev.log_level=3 vt.global_cursor_default=0"
 GRUB_GFXMODE="auto"
-GRUB_THEME="/boot/grub/themes/MilkGrub/theme.txt"
+# GRUB_THEME is intentionally commented out here.
+# Enable it by loading the grub-themed profile, which triggers
+# scripts/install-grub.sh to install MilkGrub and set the path.
+# Without grub-themed, leaving this active causes a GRUB error on boot.
+#GRUB_THEME="/boot/grub/themes/MilkGrub/theme.txt"
 GRUB_DISABLE_SUBMENU=true

@@ -108,13 +108,18 @@ merge_grub_defaults() {
         } > "$merge_defaults_tmp"
     fi
 
-    for merge_defaults_var in GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_GFXMODE GRUB_THEME GRUB_DISABLE_SUBMENU; do
+    for merge_defaults_var in GRUB_TIMEOUT GRUB_DISTRIBUTOR GRUB_GFXMODE GRUB_DISABLE_SUBMENU; do
         merge_defaults_value=$(extract_var "$merge_defaults_var" "$GRUB_DEFAULT_TEMPLATE")
         if [ "$merge_defaults_var" = "GRUB_GFXMODE" ] && [ -n "$GRUB_GFXMODE" ]; then
             merge_defaults_value=$(quote_value "$GRUB_GFXMODE")
         fi
         [ -n "$merge_defaults_value" ] && set_grub_var "$merge_defaults_tmp" "$merge_defaults_var" "$merge_defaults_value"
     done
+    # GRUB_THEME is set explicitly here (not read from template) because the
+    # template keeps it commented out to avoid errors on machines without the theme.
+    # install-grub.sh is only called when grub-themed profile is active, so it is
+    # safe to always enable the theme when this script runs.
+    set_grub_var "$merge_defaults_tmp" GRUB_THEME '"/boot/grub/themes/MilkGrub/theme.txt"'
     merge_cmdline_default "$merge_defaults_tmp"
 
     as_root install -m 0644 "$merge_defaults_tmp" /etc/default/grub

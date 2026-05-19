@@ -1,6 +1,4 @@
-# Load system defaults
+# Generic PulseAudio defaults — include system configuration.
+# Machine-specific sink/source overrides belong in the host overlay:
+#   hosts/<hostname>/media/.config/pulse/default.pa
 .include /etc/pulse/default.pa
-
-# Set Arturia MiniFuse 1 as default (headphones + mic)
-set-default-sink   alsa_output.usb-ARTURIA_MiniFuse_1-00.HiFi__minifuse12_stereo_out_M1_0_0_1__sink
-set-default-source alsa_input.usb-ARTURIA_MiniFuse_1-00.HiFi__minifuse12_mono_in_M1_0_0__source
