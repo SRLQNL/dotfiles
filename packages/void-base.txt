@@ -15,11 +15,6 @@ psmisc
 # x86_64 EFI: grub-x86_64-efi | ARM64 EFI: grub-arm64-efi | BIOS: grub-i386-pc
 linux
 
-# Void repos (enable before everything else)
-void-repo-multilib
-void-repo-nonfree
-void-repo-multilib-nonfree
-
 # niri Wayland desktop
 niri
 xwayland-satellite
@@ -76,4 +71,3 @@ noto-fonts-ttf-extra
 noto-fonts-cjk
 noto-fonts-emoji
 network-manager-applet
-openrgb

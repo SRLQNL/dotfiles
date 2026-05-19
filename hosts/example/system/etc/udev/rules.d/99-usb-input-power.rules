@@ -1,0 +1,25 @@
+# TEMPLATE: USB input power rules — used when INSTALL_USB_INPUT_POWER_FIX=1 in host.env
+#
+# Find your device vendor/product IDs with: lsusb
+# Find USB hub IDs with: lsusb | grep -i hub
+#
+# Replace the placeholder idVendor/idProduct values below with your actual devices.
+
+ACTION!="add", ACTION!="change", ACTION!="bind", GOTO="usb_input_power_end"
+
+# USB hubs — disable autosuspend
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{bDeviceClass}=="09", \
+  ATTR{power/control}="on", \
+  ATTR{power/autosuspend_delay_ms}="0"
+
+# Keyboard — replace idVendor/idProduct with your device (from lsusb)
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", \
+  ATTRS{idVendor}=="XXXX", ATTRS{idProduct}=="XXXX", \
+  ATTR{power/control}="on"
+
+# Mouse — replace idVendor/idProduct with your device (from lsusb)
+ACTION=="add|change", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", \
+  ATTRS{idVendor}=="XXXX", ATTRS{idProduct}=="XXXX", \
+  ATTR{power/control}="on"
+
+LABEL="usb_input_power_end"

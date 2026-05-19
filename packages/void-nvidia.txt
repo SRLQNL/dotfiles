@@ -1,5 +1,9 @@
 # NVIDIA packages — activate with profile: desktop-nvidia
-# Requires: void-repo-nonfree void-repo-multilib void-repo-multilib-nonfree
+
+# Nonfree/multilib repos required for NVIDIA and 32-bit libs
+void-repo-multilib
+void-repo-nonfree
+void-repo-multilib-nonfree
 
 # 32-bit compatibility libraries (needed for Steam and Proton)
 nvidia-libs-32bit

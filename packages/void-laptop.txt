@@ -2,6 +2,7 @@
 
 # Battery / power info
 acpi
+# tlp conflicts with thermald and power-profile-daemon; disable those services if using tlp
 tlp
 
 # Touchpad / input extras

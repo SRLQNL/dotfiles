@@ -1,0 +1,4 @@
+# RGB control packages — activate with profile: rgb
+# Only for machines with RGB hardware (motherboard, RAM, GPU LEDs, etc.)
+
+openrgb
