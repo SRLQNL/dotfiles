@@ -4,5 +4,5 @@
 # Syntax: simple KEY=VAL pairs on separate lines.
 #
 EDITOR=nano
-BROWSER=vivaldi-stable
+BROWSER=xdg-open
 TERMINAL=foot

@@ -315,8 +315,8 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Suggested binds for running programs: terminal, app launcher, screen locker.
-    Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "/usr/bin/foot"; }
-    Mod+E hotkey-overlay-title="File Manager: Thunar" { spawn "/usr/bin/Thunar"; }
+    Mod+Return hotkey-overlay-title="Open a Terminal: foot" { spawn "foot"; }
+    Mod+E hotkey-overlay-title="File Manager: Thunar" { spawn "Thunar"; }
     Mod+L repeat=false hotkey-overlay-title="Lock the Screen" { spawn-sh "$HOME/.config/niri/scripts/lock.sh"; }
     Mod+D repeat=false allow-inhibiting=false hotkey-overlay-title="Run an Application: fuzzel" { spawn-sh "$HOME/.config/niri/scripts/fuzzel-menu.sh launcher"; }
     Mod+V repeat=false allow-inhibiting=false hotkey-overlay-title="Clipboard History" { spawn-sh "$HOME/.config/niri/scripts/fuzzel-menu.sh clipboard"; }
@@ -573,7 +573,8 @@ spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
 spawn-at-startup "pipewire-pulse"
-spawn-at-startup "awww-daemon"
+// awww-daemon: not in xbps repos, install manually from https://github.com/heapbytes/awww
+// spawn-at-startup "awww-daemon"
 // spawn-at-startup "/usr/bin/xwayland-satellite"
 spawn-sh-at-startup "$HOME/.config/waybar/scripts/launch.sh"
 spawn-sh-at-startup "$HOME/.config/niri/scripts/load_wallpaper.sh"
