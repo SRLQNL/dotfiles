@@ -3,6 +3,6 @@
 #
 # Syntax: simple KEY=VAL pairs on separate lines.
 #
-EDITOR=vim
-BROWSER=${BROWSER:-xdg-open}
+EDITOR=nano
+BROWSER=vivaldi-stable
 TERMINAL=foot
