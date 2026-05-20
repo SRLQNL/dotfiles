@@ -164,6 +164,12 @@ if [ -d /etc/sv/naive-proxy ]; then
   vpn-restart() { sudo sv restart naive-proxy; }
   vpn-status()  { sudo sv status naive-proxy; }
   vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo; }
+  # Run any CLI command through the proxy: proxied curl ifconfig.me
+  proxied() {
+    HTTP_PROXY=http://127.0.0.1:8118   http_proxy=http://127.0.0.1:8118 \
+    HTTPS_PROXY=http://127.0.0.1:8118  https_proxy=http://127.0.0.1:8118 \
+    ALL_PROXY=socks5://127.0.0.1:1080  proxychains4 "$@"
+  }
 fi
 
 # starship prompt
