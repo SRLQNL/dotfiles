@@ -1,0 +1,5 @@
+srl ALL=(root) NOPASSWD: \
+    /usr/bin/sv up AmneziaVPN-service, \
+    /usr/bin/sv down AmneziaVPN-service, \
+    /usr/bin/sv restart AmneziaVPN-service, \
+    /usr/bin/sv restart nftables

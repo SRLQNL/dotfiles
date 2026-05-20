@@ -1,6 +1,4 @@
 #!/bin/bash
-# Quick network control panel — proxy/VPN switching and status checks.
-
 set -euo pipefail
 
 if pgrep -x fuzzel > /dev/null; then pkill -x fuzzel; exit 0; fi
@@ -8,14 +6,11 @@ if pgrep -x fuzzel > /dev/null; then pkill -x fuzzel; exit 0; fi
 TERM_EMU="${TERM_EMULATOR:-foot}"
 
 notify() { command -v notify-send &>/dev/null && notify-send "Network" "$1"; }
-
 run_term() { $TERM_EMU sh -c "$1; echo; printf 'Press Enter...'; read" & }
 
-proxy_state() { sudo sv status naive-proxy 2>/dev/null | grep -q "^run" && echo "ON" || echo "OFF"; }
-vpn_state()   { sudo sv status AmneziaVPN-service 2>/dev/null | grep -q "^run" && echo "ON" || echo "OFF"; }
-
-P=$(proxy_state)
-V=$(vpn_state)
+# Status without sudo — pgrep on the actual service binary
+pgrep -x "naive"               &>/dev/null && P="ON" || P="OFF"
+pgrep -x "AmneziaVPN-service"  &>/dev/null && V="ON" || V="OFF"
 
 selected=$(printf '%s\n' \
     "Proxy [$P]  toggle" \
@@ -25,34 +20,21 @@ selected=$(printf '%s\n' \
     "VPN   [$V]  restart" \
     "Firewall    reload" \
     | fuzzel --dmenu --prompt="Network> " --lines=6 --width=35) || exit 0
-
 [[ -z "$selected" ]] && exit 0
 
 case "$selected" in
     "Proxy"*"toggle")
-        if [[ "$P" == "ON" ]]; then
-            sudo sv down naive-proxy && notify "Proxy OFF"
-        else
-            sudo sv up   naive-proxy && notify "Proxy ON"
-        fi
-        ;;
+        if [[ "$P" == "ON" ]]; then sudo sv down naive-proxy   && notify "Proxy OFF"
+                                else sudo sv up   naive-proxy   && notify "Proxy ON"; fi ;;
     "Proxy"*"restart")
-        sudo sv restart naive-proxy && notify "Proxy restarted"
-        ;;
+        sudo sv restart naive-proxy && notify "Proxy restarted" ;;
     "Proxy"*"check IP")
-        run_term "curl -s --max-time 8 --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo"
-        ;;
+        run_term "curl -s --max-time 8 --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo" ;;
     "VPN"*"toggle")
-        if [[ "$V" == "ON" ]]; then
-            sudo sv down AmneziaVPN-service && notify "VPN OFF"
-        else
-            sudo sv up   AmneziaVPN-service && notify "VPN ON"
-        fi
-        ;;
+        if [[ "$V" == "ON" ]]; then sudo sv down AmneziaVPN-service && notify "VPN OFF"
+                                else sudo sv up   AmneziaVPN-service && notify "VPN ON"; fi ;;
     "VPN"*"restart")
-        sudo sv restart AmneziaVPN-service && notify "VPN restarted"
-        ;;
+        sudo sv restart AmneziaVPN-service && notify "VPN restarted" ;;
     "Firewall"*"reload")
-        sudo sv restart nftables && notify "Firewall reloaded"
-        ;;
+        sudo sv restart nftables && notify "Firewall reloaded" ;;
 esac
