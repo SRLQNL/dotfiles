@@ -35,10 +35,11 @@ parse_desktop() {
         /^Exec=/ && exec==""   { exec=substr($0, index($0,"=")+1) }
         /^Terminal=true/       { term="true" }
         ENDFILE {
-            if (name == "" || exec == "") { name=""; exec=""; term="false"; next }
-            gsub(/ ?%[fFuUdDnNickvm]/, "", exec)
-            gsub(/  +/, " ", exec); sub(/^ +| +$/, "", exec)
-            print name "\t" exec "\t" term
+            if (name != "" && exec != "") {
+                gsub(/ ?%[fFuUdDnNickvm]/, "", exec)
+                gsub(/  +/, " ", exec); sub(/^ +| +$/, "", exec)
+                print name "\t" exec "\t" term
+            }
             name=""; exec=""; term="false"
         }
     ' 2>/dev/null \
