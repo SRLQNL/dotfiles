@@ -164,6 +164,11 @@ if [ -d /etc/sv/naive-proxy ]; then
   vpn-restart() { sudo sv restart naive-proxy; }
   vpn-status()  { sudo sv status naive-proxy; }
   vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo; }
+  # HTTP proxy via privoxy (SOCKS5→HTTP bridge) — for tools that don't support SOCKS5 (claude, npm, etc.)
+  export HTTP_PROXY=http://127.0.0.1:8118
+  export HTTPS_PROXY=http://127.0.0.1:8118
+  export http_proxy=http://127.0.0.1:8118
+  export https_proxy=http://127.0.0.1:8118
 fi
 
 # starship prompt
