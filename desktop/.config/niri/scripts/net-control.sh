@@ -9,9 +9,9 @@ pgrep -x "naive" &>/dev/null && P="ON" || P="OFF"
 
 selected=$(printf '%s\n' \
     "Proxy [$P]  toggle" \
-    "Proxy         restart" \
+    "Proxy [$P]  restart" \
     "Check IP via proxy" \
-    "Firewall      reload" \
+    "Firewall    reload" \
     | fuzzel --dmenu --prompt="Network> " --lines=4 --width=30) || exit 0
 [[ -z "$selected" ]] && exit 0
 

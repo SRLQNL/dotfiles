@@ -168,7 +168,7 @@ if [ -d /etc/sv/naive-proxy ]; then
   proxied() {
     HTTP_PROXY=http://127.0.0.1:8118   http_proxy=http://127.0.0.1:8118 \
     HTTPS_PROXY=http://127.0.0.1:8118  https_proxy=http://127.0.0.1:8118 \
-    ALL_PROXY=socks5://127.0.0.1:1080  proxychains4 "$@"
+    ALL_PROXY=socks5://127.0.0.1:1080  proxychains4 -q "$@"
   }
 fi
 
