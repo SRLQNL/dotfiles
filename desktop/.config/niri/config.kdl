@@ -564,6 +564,8 @@ binds {
     // moving the mouse or pressing any other key.
     Mod+Shift+P { power-off-monitors; }
 	Mod+Shift+W repeat=false { spawn-sh "$HOME/.config/niri/scripts/set_wallpaper.sh"; }
+	Mod+Shift+X repeat=false hotkey-overlay-title="Proxy App Launcher" { spawn-sh "$HOME/.config/niri/scripts/proxy-launch.sh"; }
+	Mod+Shift+N repeat=false hotkey-overlay-title="Network Control" { spawn-sh "$HOME/.config/niri/scripts/net-control.sh"; }
 	// Mod+Shift+B { spawn-sh "$HOME/.config/niri/scripts/profile_switcher.sh"; }
 }
 
