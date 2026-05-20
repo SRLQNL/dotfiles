@@ -65,8 +65,7 @@ selected=$(awk -F'\t' '{
         --width=58 \
         --font="Noto Sans Mono:size=13" \
         --match-mode=fzf \
-        --icon-theme=Zafiro-Dark \
-        --icons-enabled=yes) || exit 0
+        --icon-theme=Zafiro-Dark) || exit 0
 [[ -z "$selected" ]] && exit 0
 
 entry=$(awk -F'\t' -v n="$selected" '$1==n{print;exit}' "$tmpfile")
