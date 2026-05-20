@@ -1,116 +1,58 @@
 #!/bin/bash
-# Network control and monitoring menu via fuzzel.
-# Shows live status in the menu header; each action opens a foot terminal or runs silently.
+# Quick network control panel — proxy/VPN switching and status checks.
 
 set -euo pipefail
 
 if pgrep -x fuzzel > /dev/null; then pkill -x fuzzel; exit 0; fi
 
 TERM_EMU="${TERM_EMULATOR:-foot}"
-SOCKS="127.0.0.1:1080"
-HTTP_P="127.0.0.1:8118"
-
-# ── helpers ───────────────────────────────────────────────────────────────────
 
 notify() { command -v notify-send &>/dev/null && notify-send "Network" "$1"; }
 
-run_term() {
-    # Run a shell command in a new foot window; keep it open until Enter
-    $TERM_EMU sh -c "$1; echo; printf 'Press Enter to close...'; read" &
-}
+run_term() { $TERM_EMU sh -c "$1; echo; printf 'Press Enter...'; read" & }
 
-proxy_status() {
-    sudo sv status naive-proxy 2>/dev/null | grep -q "^run" && echo "ON" || echo "OFF"
-}
+proxy_state() { sudo sv status naive-proxy 2>/dev/null | grep -q "^run" && echo "ON" || echo "OFF"; }
+vpn_state()   { sudo sv status AmneziaVPN-service 2>/dev/null | grep -q "^run" && echo "ON" || echo "OFF"; }
 
-# ── menu ──────────────────────────────────────────────────────────────────────
+P=$(proxy_state)
+V=$(vpn_state)
 
-PROXY_STATE=$(proxy_status)
+selected=$(printf '%s\n' \
+    "Proxy [$P]  toggle" \
+    "Proxy [$P]  restart" \
+    "Proxy [$P]  check IP" \
+    "VPN   [$V]  toggle" \
+    "VPN   [$V]  restart" \
+    "Firewall    reload" \
+    | fuzzel --dmenu --prompt="Network> " --lines=6 --width=35) || exit 0
 
-MENU=$(cat <<EOF
-[proxy: $PROXY_STATE] Check IP direct
-[proxy: $PROXY_STATE] Check IP via proxy
-Proxy: toggle naive-proxy
-Proxy: restart naive-proxy
-Ports: show listening (ss)
-Ports: show all connections
-Interfaces: ip addr
-Firewall: nftables ruleset
-Firewall: reload nftables
-DNS: test resolution
-DNS: show resolv.conf
-Docker: network info
-VPN: AmneziaVPN status
-VPN: restart AmneziaVPN
-EOF
-)
-
-selected=$(echo "$MENU" | fuzzel --dmenu \
-    --prompt="Network> " --lines=18 --width=50) || exit 0
 [[ -z "$selected" ]] && exit 0
 
-# ── actions ───────────────────────────────────────────────────────────────────
-
 case "$selected" in
-
-    *"Check IP direct"*)
-        run_term "echo 'Direct IP:'; curl -s --max-time 8 https://api.ipify.org; echo"
-        ;;
-
-    *"Check IP via proxy"*)
-        run_term "echo 'IP via proxy (naiveproxy):'; curl -s --max-time 8 --socks5-hostname $SOCKS https://api.ipify.org; echo"
-        ;;
-
-    *"toggle naive-proxy"*)
-        if [[ "$PROXY_STATE" == "ON" ]]; then
-            sudo sv down naive-proxy && notify "naive-proxy stopped"
+    "Proxy"*"toggle")
+        if [[ "$P" == "ON" ]]; then
+            sudo sv down naive-proxy && notify "Proxy OFF"
         else
-            sudo sv up   naive-proxy && notify "naive-proxy started"
+            sudo sv up   naive-proxy && notify "Proxy ON"
         fi
         ;;
-
-    *"restart naive-proxy"*)
-        sudo sv restart naive-proxy && notify "naive-proxy restarted"
+    "Proxy"*"restart")
+        sudo sv restart naive-proxy && notify "Proxy restarted"
         ;;
-
-    *"show listening"*)
-        run_term "echo '=== TCP ==='; ss -tlnp; echo; echo '=== UDP ==='; ss -ulnp"
+    "Proxy"*"check IP")
+        run_term "curl -s --max-time 8 --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo"
         ;;
-
-    *"show all connections"*)
-        run_term "ss -tnp"
+    "VPN"*"toggle")
+        if [[ "$V" == "ON" ]]; then
+            sudo sv down AmneziaVPN-service && notify "VPN OFF"
+        else
+            sudo sv up   AmneziaVPN-service && notify "VPN ON"
+        fi
         ;;
-
-    *"ip addr"*)
-        run_term "ip -c addr show"
+    "VPN"*"restart")
+        sudo sv restart AmneziaVPN-service && notify "VPN restarted"
         ;;
-
-    *"nftables ruleset"*)
-        run_term "sudo nft list ruleset"
+    "Firewall"*"reload")
+        sudo sv restart nftables && notify "Firewall reloaded"
         ;;
-
-    *"reload nftables"*)
-        sudo sv restart nftables && notify "nftables reloaded"
-        ;;
-
-    *"DNS: test"*)
-        run_term "echo '=== 8.8.8.8 ==='; nslookup google.com 8.8.8.8; echo; echo '=== 1.1.1.1 ==='; nslookup google.com 1.1.1.1"
-        ;;
-
-    *"resolv.conf"*)
-        run_term "cat /etc/resolv.conf"
-        ;;
-
-    *"Docker: network"*)
-        run_term "docker network ls; echo; docker ps --format 'table {{.Names}}\t{{.Ports}}' 2>/dev/null || echo 'No containers running'"
-        ;;
-
-    *"AmneziaVPN status"*)
-        run_term "sudo sv status AmneziaVPN-service; echo; ip addr show amn0 2>/dev/null || echo 'amn0 interface not up'"
-        ;;
-
-    *"restart AmneziaVPN"*)
-        sudo sv restart AmneziaVPN-service && notify "AmneziaVPN restarted"
-        ;;
-
 esac
