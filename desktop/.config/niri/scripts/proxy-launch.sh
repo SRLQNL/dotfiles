@@ -12,32 +12,38 @@ TERM_EMU="${TERM_EMULATOR:-foot}"
 
 notify() { command -v notify-send &>/dev/null && notify-send "Proxy Launch" "$1"; }
 
-# Single awk pass: extract Name, Exec, Terminal from each .desktop file
-# Output: "Name\tExec\tterminal_bool"
+# Parse .desktop files: user dir first so it takes priority over system dir.
+# Only reads [Desktop Entry] section; skips [Desktop Action *] and duplicates by Name.
 parse_desktop() {
-    find /usr/share/applications "${HOME}/.local/share/applications" \
-         -maxdepth 1 -name "*.desktop" 2>/dev/null \
-    | xargs awk '
-        BEGIN { FS="="; name=""; exec=""; term="false"; skip=0 }
-        /^\[Desktop Entry\]/  { skip=0 }
-        /^\[Desktop Action/   { skip=1 }
-        skip { next }
-        /^NoDisplay=true/     { name=""; next }
-        /^Hidden=true/        { name=""; next }
-        /^Name=/   && name=="" { name=substr($0, index($0,"=")+1) }
-        /^Exec=/   && exec=="" { exec=substr($0, index($0,"=")+1) }
+    local dirs=("${HOME}/.local/share/applications" "/usr/share/applications")
+    local all_files=()
+    for d in "${dirs[@]}"; do
+        [[ -d "$d" ]] || continue
+        while IFS= read -r f; do all_files+=("$f"); done \
+            < <(find "$d" -maxdepth 1 -name "*.desktop" 2>/dev/null)
+    done
+    (( ${#all_files[@]} == 0 )) && return
+
+    printf '%s\0' "${all_files[@]}" | xargs -0 awk '
+        BEGIN { FS="="; in_entry=0 }
+        /^\[Desktop Entry\]/   { in_entry=1; name=""; exec=""; term="false"; next }
+        /^\[/                  { in_entry=0; next }
+        !in_entry              { next }
+        /^NoDisplay=true/      { name=""; next }
+        /^Hidden=true/         { name=""; next }
+        /^Name=/ && name==""   { name=substr($0, index($0,"=")+1) }
+        /^Exec=/ && exec==""   { exec=substr($0, index($0,"=")+1) }
         /^Terminal=true/       { term="true" }
         ENDFILE {
-            if (name != "" && exec != "") {
-                # strip %f %u %F %U etc.
-                gsub(/ ?%[fFuUdDnNickvm]/, "", exec)
-                gsub(/  +/, " ", exec)
-                sub(/^ | $/, "", exec)
-                print name "\t" exec "\t" term
-            }
-            name=""; exec=""; term="false"; skip=0
+            if (name == "" || exec == "") { name=""; exec=""; term="false"; next }
+            gsub(/ ?%[fFuUdDnNickvm]/, "", exec)
+            gsub(/  +/, " ", exec); sub(/^ +| +$/, "", exec)
+            print name "\t" exec "\t" term
+            name=""; exec=""; term="false"
         }
-    ' 2>/dev/null | sort -t$'\t' -k1 -u
+    ' 2>/dev/null \
+    | awk -F'\t' '!seen[$1]++' \
+    | sort -t$'\t' -k1
 }
 
 app_data=$(parse_desktop)
