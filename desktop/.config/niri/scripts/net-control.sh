@@ -4,6 +4,8 @@
 
 set -euo pipefail
 
+if pgrep -x fuzzel > /dev/null; then pkill -x fuzzel; exit 0; fi
+
 TERM_EMU="${TERM_EMULATOR:-foot}"
 SOCKS="127.0.0.1:1080"
 HTTP_P="127.0.0.1:8118"

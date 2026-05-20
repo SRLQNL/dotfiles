@@ -4,6 +4,8 @@
 
 set -euo pipefail
 
+if pgrep -x fuzzel > /dev/null; then pkill -x fuzzel; exit 0; fi
+
 PROXY_HTTP="http://127.0.0.1:8118"
 PROXY_SOCKS="socks5://127.0.0.1:1080"
 TERM_EMU="${TERM_EMULATOR:-foot}"
