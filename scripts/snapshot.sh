@@ -71,9 +71,14 @@ for f in thunar-open-root-here thunar-open-terminal-here; do
 done
 
 if [ -d /var/service ]; then
-    tmp="$DOTFILES_DIR/services/runit-enabled.txt.tmp.$$"
+    _hostname=$(hostname 2>/dev/null | cut -d. -f1)
+    [ -n "$_hostname" ] || _hostname=unknown
+    _host_dir="$DOTFILES_DIR/hosts/$_hostname"
+    mkdir -p "$_host_dir"
+    tmp="$_host_dir/runit-enabled.txt.tmp.$$"
     find /var/service -maxdepth 1 -mindepth 1 -printf '%f\n' 2>/dev/null | sort > "$tmp"
-    mv -- "$tmp" "$DOTFILES_DIR/services/runit-enabled.txt"
+    mv -- "$tmp" "$_host_dir/runit-enabled.txt"
+    printf 'runit services written to: %s/runit-enabled.txt\n' "$_host_dir"
 fi
 
 printf 'snapshot updated: %s\n' "$DOTFILES_DIR"

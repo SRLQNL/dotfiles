@@ -546,7 +546,8 @@ apply_host_etc() {
         else
             tmp=$(mktemp)
             # Substitute literal "srl" username placeholder with actual username
-            sed "s/\bsrl\b/$INSTALL_USER/g" "$src" > "$tmp"  # GNU sed required (\b = word boundary)
+            sed "s/[[:<:]]srl[[:>:]]/$INSTALL_USER/g" "$src" > "$tmp" 2>/dev/null || \
+                sed "s/\bsrl\b/$INSTALL_USER/g" "$src" > "$tmp"
             dry_root install -d -m 755 "$dst_dir"
             dry_root install -m 644 "$tmp" "$dst"
             rm -f "$tmp"

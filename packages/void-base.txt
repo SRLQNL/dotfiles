@@ -20,7 +20,6 @@ niri
 xwayland-satellite
 xdg-desktop-portal
 xdg-desktop-portal-gtk
-xdg-desktop-portal-gnome
 Waybar
 foot
 fuzzel
@@ -70,4 +69,7 @@ noto-fonts-ttf
 noto-fonts-ttf-extra
 noto-fonts-cjk
 noto-fonts-emoji
+NetworkManager
 network-manager-applet
+sddm
+nftables

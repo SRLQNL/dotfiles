@@ -131,7 +131,11 @@ setup_steam_paths() {
             "$STEAM_PARENT" "$STEAM_DATA_DIR" >&2
     fi
     mkdir -p "$HOME/.local/share" "$HOME/.steam" "$STEAM_DATA_DIR" "$STEAM_LIBRARY_DIR"
-    ln -sfn "$STEAM_DATA_DIR" "$HOME/.local/share/Steam"
+    # Only create symlink if STEAM_DATA_DIR is not already the target path (avoid self-loop)
+    _steam_canonical="$HOME/.local/share/Steam"
+    if [ "$(readlink -f "$STEAM_DATA_DIR" 2>/dev/null || echo "$STEAM_DATA_DIR")" != "$(readlink -f "$_steam_canonical" 2>/dev/null || true)" ]; then
+        ln -sfn "$STEAM_DATA_DIR" "$_steam_canonical"
+    fi
     ln -sfn "$STEAM_DATA_DIR" "$HOME/.steam/steam"
     ln -sfn "$STEAM_DATA_DIR" "$HOME/.steam/root"
 }

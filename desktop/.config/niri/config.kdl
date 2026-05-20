@@ -570,13 +570,12 @@ binds {
 }
 
 spawn-at-startup "/usr/libexec/xdg-desktop-portal-gtk"
-spawn-at-startup "/usr/libexec/xdg-desktop-portal-gnome"
 spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
 spawn-at-startup "pipewire-pulse"
-spawn-at-startup "awww-daemon"
-// spawn-at-startup "/usr/bin/xwayland-satellite"
+spawn-sh-at-startup "command -v awww-daemon >/dev/null && awww-daemon || true"
+spawn-at-startup "/usr/bin/xwayland-satellite"
 spawn-sh-at-startup "$HOME/.config/waybar/scripts/launch.sh"
 spawn-sh-at-startup "$HOME/.config/niri/scripts/load_wallpaper.sh"
 spawn-at-startup "swaync"

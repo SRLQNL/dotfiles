@@ -5,6 +5,10 @@ void-repo-multilib
 void-repo-nonfree
 void-repo-multilib-nonfree
 
+# NVIDIA driver (proprietary) + mesa (required for niri/Wayland to start with NVIDIA)
+nvidia
+mesa
+
 # 32-bit compatibility libraries (needed for Steam and Proton)
 nvidia-libs-32bit
 vulkan-loader-32bit
