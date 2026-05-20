@@ -1,6 +1,5 @@
 #!/bin/bash
-# Launch any .desktop app through the local proxy.
-# GUI apps: HTTP_PROXY env vars. Terminal apps: proxychains4 inside foot.
+# Launch any app through the local proxy — reads the same XDG dirs as fuzzel.
 
 set -euo pipefail
 
@@ -12,42 +11,48 @@ TERM_EMU="${TERM_EMULATOR:-foot}"
 
 notify() { command -v notify-send &>/dev/null && notify-send "Proxy Launch" "$1"; }
 
-# Parse .desktop files: user dir first so it takes priority over system dir.
-# Only reads [Desktop Entry] section; skips [Desktop Action *] and duplicates by Name.
-parse_desktop() {
-    local dirs=("${HOME}/.local/share/applications" "/usr/share/applications")
-    local all_files=()
-    for d in "${dirs[@]}"; do
-        [[ -d "$d" ]] || continue
-        while IFS= read -r f; do all_files+=("$f"); done \
-            < <(find "$d" -maxdepth 1 -name "*.desktop" 2>/dev/null)
-    done
-    (( ${#all_files[@]} == 0 )) && return
+# Collect all application dirs the same way fuzzel does: XDG_DATA_DIRS + user dir.
+# User dir first so it overrides system entries with the same Name.
+collect_dirs() {
+    echo "${HOME}/.local/share/applications"
+    printf '%s' "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" \
+        | tr ':' '\n' \
+        | sed 's|/*$|/applications|'
+}
 
-    printf '%s\0' "${all_files[@]}" | xargs -0 awk '
-        BEGIN { FS="="; in_entry=0 }
-        /^\[Desktop Entry\]/   { in_entry=1; name=""; exec=""; term="false"; next }
-        /^\[/                  { in_entry=0; next }
-        !in_entry              { next }
-        /^NoDisplay=true/      { name=""; next }
-        /^Hidden=true/         { name=""; next }
-        /^Name=/ && name==""   { name=substr($0, index($0,"=")+1) }
-        /^Exec=/ && exec==""   { exec=substr($0, index($0,"=")+1) }
-        /^Terminal=true/       { term="true" }
+# Gather .desktop files, user dir first (for dedup priority)
+mapfile -t desktop_files < <(
+    while IFS= read -r dir; do
+        [[ -d "$dir" ]] && find "$dir" -maxdepth 1 -name "*.desktop" 2>/dev/null
+    done < <(collect_dirs)
+)
+
+(( ${#desktop_files[@]} == 0 )) && { notify "No applications found"; exit 1; }
+
+# Single awk pass: parse only [Desktop Entry], dedup by Name (first wins = user override)
+app_data=$(
+    printf '%s\0' "${desktop_files[@]}" | xargs -0 awk '
+        BEGIN { in_entry=0 }
+        /^\[Desktop Entry\]/  { in_entry=1; name=""; exec=""; term="false"; next }
+        /^\[/                 { in_entry=0; next }
+        !in_entry             { next }
+        /^(NoDisplay|Hidden)=true/ { name="SKIP"; next }
+        /^Name=/ && name==""  { name=substr($0,6) }
+        /^Exec=/ && exec==""  { exec=substr($0,6) }
+        /^Terminal=true/      { term="true" }
         ENDFILE {
-            if (name != "" && exec != "") {
+            if (name != "" && name != "SKIP" && exec != "") {
                 gsub(/ ?%[fFuUdDnNickvm]/, "", exec)
-                gsub(/  +/, " ", exec); sub(/^ +| +$/, "", exec)
+                gsub(/  +/, " ", exec); sub(/^ | $/, "", exec)
                 print name "\t" exec "\t" term
             }
-            name=""; exec=""; term="false"
+            name=""; exec=""; term="false"; in_entry=0
         }
     ' 2>/dev/null \
     | awk -F'\t' '!seen[$1]++' \
     | sort -t$'\t' -k1
-}
+)
 
-app_data=$(parse_desktop)
 [[ -z "$app_data" ]] && { notify "No applications found"; exit 1; }
 
 selected=$(printf '%s' "$app_data" | cut -f1 \
