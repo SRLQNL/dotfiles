@@ -1,3 +1,4 @@
+# NOTE: "srl" is a placeholder — replaced with $INSTALL_USER by install.sh apply_host_etc()
 srl ALL=(root) NOPASSWD: \
     /usr/bin/sv up AmneziaVPN-service, \
     /usr/bin/sv down AmneziaVPN-service, \

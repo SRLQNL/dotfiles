@@ -858,6 +858,8 @@ run_validations() {
 # ============================================================
 
 main() {
+    [ -x /usr/bin/xbps-install ] || die "this script requires Void Linux (xbps not found)"
+
     info "========================================"
     info "dotfiles install — $(date '+%F %T')"
     info "DOTFILES_DIR: $DOTFILES_DIR"
@@ -884,6 +886,12 @@ main() {
         info "loading host config: $host_env"
         # shellcheck source=/dev/null
         . "$host_env"
+        # Expose host.env to runtime scripts (e.g. net-control.sh, waybar scripts)
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run] would run: ln -sf $host_env $HOME/.config/host.env"
+        else
+            ln -sf "$host_env" "$HOME/.config/host.env"
+        fi
     else
         warn "no host config found at hosts/$HOSTNAME_KEY/host.env"
         warn "copy hosts/example/host.env to hosts/$HOSTNAME_KEY/host.env and edit it"
