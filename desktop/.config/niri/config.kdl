@@ -4,8 +4,8 @@
 // https://yalter.github.io/niri/Configuration:-Introduction
 
 environment {
-    // "niri" is the correct value per niri wiki; portal routing is handled by niri-portals.conf
-    XDG_CURRENT_DESKTOP "niri"
+    // GNOME:niri — нужно для GNOME Keyring (Vivaldi/Chromium определяет бэкенд паролей по этому значению)
+    XDG_CURRENT_DESKTOP "GNOME:niri"
 }
 
 // Input device configuration.
