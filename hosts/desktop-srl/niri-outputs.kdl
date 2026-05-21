@@ -6,6 +6,9 @@ output "DP-2" {
     scale 1
     transform "normal"
     position x=0 y=1080
+    // VRR on-demand: active only when a window requests it (games/video)
+    // Always-on VRR has cursor lag and flash bugs on NVIDIA; on-demand is safe
+    variable-refresh-rate on-demand=true
     hot-corners {
         off
     }
@@ -16,6 +19,7 @@ output "DP-1" {
     scale 1
     transform "normal"
     position x=0 y=0
+    variable-refresh-rate on-demand=true
     hot-corners {
         off
     }
