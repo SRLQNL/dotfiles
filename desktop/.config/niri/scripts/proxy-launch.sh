@@ -12,6 +12,12 @@ TERM_EMU="${TERM_EMULATOR:-foot}"
 
 notify() { command -v notify-send &>/dev/null && notify-send "Proxy Launch" "$1"; }
 
+# Chromium/Electron apps ignore HTTP_PROXY env vars — need --proxy-server flag instead.
+# Matches both native binaries and Flatpak app IDs.
+is_chromium() {
+    [[ "$1" =~ vivaldi|chromium|google-chrome|brave-browser|microsoft-edge|code-oss|vscodium|[Vv]esktop|[Vv]encore|[Dd]iscord|[Ss]potify ]]
+}
+
 collect_dirs() {
     echo "${HOME}/.local/share/applications"
     printf '%s' "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" \
@@ -75,16 +81,27 @@ is_term=$(printf '%s'  "$entry" | cut -f3)
 [[ -z "$exec_cmd" ]] && { notify "Not found: $selected"; exit 1; }
 
 if [[ "$exec_cmd" == *"flatpak run"* ]]; then
-    # Inject proxy env vars AND append --proxy-server for Electron/Chromium apps
     modified="${exec_cmd/flatpak run/flatpak run \
         --env=HTTP_PROXY=$PROXY_HTTP \
         --env=HTTPS_PROXY=$PROXY_HTTP \
         --env=http_proxy=$PROXY_HTTP \
         --env=https_proxy=$PROXY_HTTP \
         --env=ALL_PROXY=$PROXY_SOCKS}"
-    bash -c "$modified --proxy-server=$PROXY_HTTP" &>/dev/null &
+    if is_chromium "$exec_cmd"; then
+        # Electron/Chromium flatpak: also pass --proxy-server (env vars ignored by Chromium)
+        bash -c "$modified --proxy-server=$PROXY_HTTP" &>/dev/null &
+    else
+        # Qt/GTK/Java flatpak: env vars only — --proxy-server breaks non-Chromium apps
+        bash -c "$modified" &>/dev/null &
+    fi
 elif [[ "$is_term" == "true" ]]; then
     $TERM_EMU sh -c "proxychains4 -q $exec_cmd" &
+elif is_chromium "$exec_cmd"; then
+    # Native Chromium/Electron: --proxy-server overrides system settings reliably
+    env HTTP_PROXY="$PROXY_HTTP"  http_proxy="$PROXY_HTTP" \
+        HTTPS_PROXY="$PROXY_HTTP" https_proxy="$PROXY_HTTP" \
+        ALL_PROXY="$PROXY_SOCKS"  all_proxy="$PROXY_SOCKS" \
+        $exec_cmd --proxy-server="$PROXY_HTTP" &>/dev/null &
 else
     env HTTP_PROXY="$PROXY_HTTP"  http_proxy="$PROXY_HTTP" \
         HTTPS_PROXY="$PROXY_HTTP" https_proxy="$PROXY_HTTP" \
