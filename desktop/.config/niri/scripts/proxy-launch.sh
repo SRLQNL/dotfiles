@@ -82,7 +82,7 @@ if [[ "$exec_cmd" == *"flatpak run"* ]]; then
         --env=http_proxy=$PROXY_HTTP \
         --env=https_proxy=$PROXY_HTTP \
         --env=ALL_PROXY=$PROXY_SOCKS}"
-    eval "$modified --proxy-server=$PROXY_HTTP" &>/dev/null &
+    bash -c "$modified --proxy-server=$PROXY_HTTP" &>/dev/null &
 elif [[ "$is_term" == "true" ]]; then
     $TERM_EMU sh -c "proxychains4 -q $exec_cmd" &
 else

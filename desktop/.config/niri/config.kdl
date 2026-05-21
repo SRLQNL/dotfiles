@@ -570,11 +570,12 @@ binds {
 	// Mod+Shift+B { spawn-sh "$HOME/.config/niri/scripts/profile_switcher.sh"; }
 }
 
+// xdg-desktop-portal must start first so backends can register with it
+spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "/usr/libexec/xdg-desktop-portal-gtk"
 // xdg-desktop-portal-gnome: provides better file picker / screen-share on niri.
 // Install if missing: xbps-install xdg-desktop-portal-gnome
 spawn-sh-at-startup "[ -x /usr/libexec/xdg-desktop-portal-gnome ] && exec /usr/libexec/xdg-desktop-portal-gnome || true"
-spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
 spawn-at-startup "pipewire-pulse"
@@ -589,8 +590,8 @@ spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist -max-items 50 store"
 spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\""
-// swayidle: auto-lock after 5 min idle, lock before sleep
-spawn-sh-at-startup "command -v swayidle >/dev/null && swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f' || true"
+// swayidle: auto-lock after 5 min idle, lock before sleep and after resume
+spawn-sh-at-startup "command -v swayidle >/dev/null && swayidle -w timeout 300 \"$HOME/.config/niri/scripts/lock.sh\" before-sleep \"$HOME/.config/niri/scripts/lock.sh\" after-resume \"$HOME/.config/niri/scripts/lock.sh\" || true"
 
 // wallpaper layer-rule removed — was hiding swaybg behind niri's background
 

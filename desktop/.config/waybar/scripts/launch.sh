@@ -11,7 +11,7 @@ fi
 NIRI_PRIMARY_OUTPUT="${NIRI_PRIMARY_OUTPUT:-}"
 NIRI_SECONDARY_OUTPUT="${NIRI_SECONDARY_OUTPUT:-}"
 
-WAYBAR_CFG="/tmp/waybar-config-$(hostname).json"
+WAYBAR_CFG="/tmp/waybar-config-$(hostname | cut -d. -f1).json"
 WAYBAR_TMPL="$HOME/.config/waybar/config.tmpl"
 
 pkill -TERM -x waybar    2>/dev/null || true
