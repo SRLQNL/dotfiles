@@ -31,4 +31,6 @@ case "$selected" in
         foot -H -e sh -c "curl -s --max-time 8 --socks5-hostname $SOCKS5 https://api.ipify.org; echo" & ;;
     "Firewall"*)
         sudo sv restart nftables && notify "Firewall reloaded" ;;
+    *)
+        notify "Unknown: $selected" ;;
 esac
