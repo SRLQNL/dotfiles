@@ -4,7 +4,8 @@
 // https://yalter.github.io/niri/Configuration:-Introduction
 
 environment {
-    XDG_CURRENT_DESKTOP "GNOME:niri"
+    // "niri" is the correct value per niri wiki; portal routing is handled by niri-portals.conf
+    XDG_CURRENT_DESKTOP "niri"
 }
 
 // Input device configuration.
@@ -570,7 +571,7 @@ binds {
 }
 
 spawn-at-startup "/usr/libexec/xdg-desktop-portal-gtk"
-// xdg-desktop-portal-gnome: provides better file picker / screen-share on GNOME:niri.
+// xdg-desktop-portal-gnome: provides better file picker / screen-share on niri.
 // Install if missing: xbps-install xdg-desktop-portal-gnome
 spawn-sh-at-startup "[ -x /usr/libexec/xdg-desktop-portal-gnome ] && exec /usr/libexec/xdg-desktop-portal-gnome || true"
 spawn-at-startup "/usr/libexec/xdg-desktop-portal"
@@ -588,6 +589,8 @@ spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist -max-items 50 store"
 spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\""
+// swayidle: auto-lock after 5 min idle, lock before sleep
+spawn-sh-at-startup "command -v swayidle >/dev/null && swayidle -w timeout 300 'swaylock -f' before-sleep 'swaylock -f' || true"
 
 // wallpaper layer-rule removed — was hiding swaybg behind niri's background
 

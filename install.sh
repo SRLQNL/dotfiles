@@ -293,6 +293,7 @@ INSTALL_STOW_PACKAGES="home desktop apps media bin"
 INSTALL_POWER_PROFILE=0
 INSTALL_NVIDIA_WAYLAND_ENV=0
 INSTALL_GRUB_THEME=0
+INSTALL_NIRI_SDDM=1
 INSTALL_STEAM=0
 GRUB_EXTRA_CMDLINE=""
 GRUB_GFXMODE="auto"
@@ -339,7 +340,10 @@ system_configuration_needs_root() {
     [ "$INSTALL_POWER_PROFILE" = "1" ] && return 0
     [ "$INSTALL_NVIDIA_WAYLAND_ENV" = "1" ] && return 0
     [ "${INSTALL_USB_INPUT_POWER_FIX:-0}" = "1" ] && return 0
+    [ "${INSTALL_NIRI_SDDM:-1}" = "1" ] && return 0
     [ -r "$DOTFILES_DIR/services/runit-enabled.txt" ] && [ -d /etc/sv ] && return 0
+    # apply_system_etc always installs files to /etc/ — always needs root
+    [ -d "$DOTFILES_DIR/system/etc" ] && return 0
     return 1
 }
 
@@ -426,8 +430,10 @@ EOF
         cat >> "$env_file" <<EOF
 
 # NVIDIA Wayland session hints.
-__GLX_VENDOR_LIBRARY_NAME=nvidia
 GBM_BACKEND=nvidia-drm
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+LIBVA_DRIVER_NAME=nvidia
+ELECTRON_OZONE_PLATFORM_HINT=auto
 EOF
     fi
     info "session env written: $env_file"
@@ -513,6 +519,32 @@ apply_system_etc() {
         rel="${src#"$src_etc/"}"
         dst="/etc/$rel"
         dst_dir="$(dirname -- "$dst")"
+
+        # runit/1 and runit/2 are machine-critical boot scripts — never auto-install
+        case "$rel" in
+            runit/1|runit/2)
+                info "  skip (boot-critical, apply manually if needed): $dst"
+                continue ;;
+        esac
+
+        # NVIDIA application profile — only install when NVIDIA is selected
+        case "$rel" in
+            nvidia/*)
+                if [ "${INSTALL_NVIDIA_WAYLAND_ENV:-0}" != "1" ]; then
+                    info "  skip (no NVIDIA profile): $dst"
+                    continue
+                fi ;;
+        esac
+
+        # GRUB defaults and grub.d — only install when grub-themed profile is active
+        case "$rel" in
+            default/grub|grub.d/*)
+                if [ "${INSTALL_GRUB_THEME:-0}" != "1" ]; then
+                    info "  skip (no grub-themed profile): $dst"
+                    continue
+                fi ;;
+        esac
+
         if [ "$DRY_RUN" = "1" ]; then
             info "[dry-run] would install: $dst"
         else
@@ -644,6 +676,7 @@ apply_usb_input_power_fix() {
 # ============================================================
 
 apply_niri_sddm_session() {
+    [ "${INSTALL_NIRI_SDDM:-1}" = "1" ] || return 0
     info "=== niri SDDM session ==="
     src_bin="$DOTFILES_DIR/system/usr/local/bin/niri-sddm-session"
     src_desktop="$DOTFILES_DIR/system/usr/share/wayland-sessions/niri.desktop"

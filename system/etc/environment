@@ -5,4 +5,4 @@
 #
 EDITOR=nano
 BROWSER=xdg-open
-TERMINAL=foot
+# TERMINAL intentionally omitted — set per-host if needed (e.g. foot, kitty, alacritty)
