@@ -542,7 +542,7 @@ apply_host_etc() {
         dst_dir="$(dirname -- "$dst")"
 
         if [ "$DRY_RUN" = "1" ]; then
-            info "[dry-run] would install: $dst (with username substitution: srl -> $INSTALL_USER)"
+            info "[dry-run] would install: $dst (with username substitution: <username> -> $INSTALL_USER)"
         else
             tmp=$(mktemp)
             # Substitute literal "srl" username placeholder with actual username

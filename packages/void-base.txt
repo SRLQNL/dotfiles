@@ -20,6 +20,7 @@ niri
 xwayland-satellite
 xdg-desktop-portal
 xdg-desktop-portal-gtk
+xdg-desktop-portal-gnome
 Waybar
 foot
 fuzzel

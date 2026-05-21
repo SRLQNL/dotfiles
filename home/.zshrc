@@ -164,7 +164,6 @@ if [ -d /etc/sv/naive-proxy ]; then
   vpn-restart() { sudo sv restart naive-proxy; }
   vpn-status()  { sudo sv status naive-proxy; }
   vpn-ip()      { curl --socks5-hostname 127.0.0.1:1080 https://api.ipify.org; echo; }
-  # Run any CLI command through the proxy: proxied curl ifconfig.me
   # Run any CLI command through proxy env vars (works for curl, git, npm, claude, etc.)
   proxied() {
     HTTP_PROXY=http://127.0.0.1:8118   http_proxy=http://127.0.0.1:8118 \
@@ -172,6 +171,28 @@ if [ -d /etc/sv/naive-proxy ]; then
     ALL_PROXY=socks5://127.0.0.1:1080  all_proxy=socks5://127.0.0.1:1080 \
     "$@"
   }
+fi
+
+# AmneziaWG VPN aliases (only on machines where amnezia awg-quick is available)
+if command -v awg-quick &>/dev/null; then
+  # Default config path; override AWG_CONF in host-specific shell rc if needed
+  _AWG_CONF="${AWG_CONF:-$HOME/amnezia/awg1.conf}"
+  amnezia()        { sudo awg-quick up   "$_AWG_CONF"; }
+  amnezia-stop()   { sudo awg-quick down "$_AWG_CONF"; }
+  amnezia-status() { sudo awg show 2>/dev/null || echo "AmneziaWG not running"; }
+  unset _AWG_CONF
+fi
+
+# Zapret DPI-bypass aliases (only on machines where zapret is installed)
+if [ -x /opt/zapret/tpws/tpws ] || [ -x /usr/local/bin/tpws ]; then
+  _ZAPRET_DIR="${ZAPRET_DIR:-/opt/zapret}"
+  zapret-start()  { sudo "$_ZAPRET_DIR/init.d/sysv/zapret" start 2>/dev/null \
+                      || sudo "$_ZAPRET_DIR/blockcheck.sh" 2>/dev/null \
+                      || echo "zapret: start method unknown — check $_ZAPRET_DIR"; }
+  zapret-stop()   { sudo "$_ZAPRET_DIR/init.d/sysv/zapret" stop 2>/dev/null \
+                      || pkill -f tpws 2>/dev/null || true; }
+  zapret-status() { pgrep -a tpws 2>/dev/null || echo "zapret not running"; }
+  unset _ZAPRET_DIR
 fi
 
 # starship prompt

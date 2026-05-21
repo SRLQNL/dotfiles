@@ -570,6 +570,9 @@ binds {
 }
 
 spawn-at-startup "/usr/libexec/xdg-desktop-portal-gtk"
+// xdg-desktop-portal-gnome: provides better file picker / screen-share on GNOME:niri.
+// Install if missing: xbps-install xdg-desktop-portal-gnome
+spawn-sh-at-startup "[ -x /usr/libexec/xdg-desktop-portal-gnome ] && exec /usr/libexec/xdg-desktop-portal-gnome || true"
 spawn-at-startup "/usr/libexec/xdg-desktop-portal"
 spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
