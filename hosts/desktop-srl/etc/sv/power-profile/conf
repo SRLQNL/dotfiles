@@ -1,0 +1,6 @@
+# Power profile config — desktop-srl (RTX 3070 Ti, desktop gaming)
+CPU_GOVERNOR=performance
+CPU_EPP=balance_performance
+CPU_NO_TURBO=0
+GPU_POWER_LIMIT=275
+GPU_PERSISTENCE_MODE=1

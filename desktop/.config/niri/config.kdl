@@ -579,7 +579,8 @@ spawn-at-startup "pipewire"
 spawn-at-startup "wireplumber"
 spawn-at-startup "pipewire-pulse"
 spawn-sh-at-startup "command -v awww-daemon >/dev/null && awww-daemon || true"
-spawn-at-startup "/usr/bin/xwayland-satellite"
+// xwayland-satellite: niri 25.08+ auto-spawns it on-demand when an X11 client connects.
+// Requires xwayland-satellite in $PATH. No manual spawn needed.
 spawn-sh-at-startup "$HOME/.config/waybar/scripts/launch.sh"
 spawn-sh-at-startup "$HOME/.config/niri/scripts/load_wallpaper.sh"
 spawn-at-startup "swaync"
@@ -588,7 +589,7 @@ spawn-at-startup "/usr/libexec/polkit-gnome-authentication-agent-1"
 spawn-at-startup "nm-applet" "--indicator"
 spawn-at-startup "wl-clip-persist" "--clipboard" "regular"
 spawn-at-startup "bash" "-c" "wl-paste --watch cliphist -max-items 50 store"
-spawn-sh-at-startup "python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\""
+spawn-sh-at-startup "command -v python3 >/dev/null && python3 \"$HOME/.config/niri/scripts/float-center-daemon.py\" || true"
 // swayidle: auto-lock after 5 min idle, lock before sleep and after resume
 spawn-sh-at-startup "command -v swayidle >/dev/null && swayidle -w timeout 300 \"$HOME/.config/niri/scripts/lock.sh\" before-sleep \"$HOME/.config/niri/scripts/lock.sh\" after-resume \"$HOME/.config/niri/scripts/lock.sh\" || true"
 

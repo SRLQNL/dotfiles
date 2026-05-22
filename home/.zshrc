@@ -123,10 +123,14 @@ alias gp='git push'
 
 [ -d "$HOME/.spicetify" ] && export PATH=$PATH:$HOME/.spicetify
 
-# SSH agent auto-start
-if command -v ssh-agent >/dev/null 2>&1 && [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-    for _k in id_ed25519 id_rsa id_ecdsa; do [ -r "$HOME/.ssh/$_k" ] && ssh-add "$HOME/.ssh/$_k" 2>/dev/null; done; unset _k
+# SSH agent — single persistent instance via fixed socket (prevents agent accumulation)
+if command -v ssh-agent >/dev/null 2>&1; then
+    export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+    if ! ssh-add -l >/dev/null 2>&1; then
+        rm -f "$SSH_AUTH_SOCK"
+        ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
+        for _k in id_ed25519 id_rsa id_ecdsa; do [ -r "$HOME/.ssh/$_k" ] && ssh-add "$HOME/.ssh/$_k" 2>/dev/null; done; unset _k
+    fi
 fi
 
 # dotnet

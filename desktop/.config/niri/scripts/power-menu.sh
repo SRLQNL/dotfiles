@@ -18,10 +18,13 @@ SELECTION="$(printf 'Shutdown\nReboot\nLogout\nSuspend' \
         --font='Noto Sans Mono:size=15' \
         --no-sort)"
 
-case "$SELECTION" in
-    Shutdown) loginctl poweroff ;;
-    Reboot)   loginctl reboot ;;
-    Logout)   niri msg action quit ;;
-    Suspend)  loginctl suspend ;;
+_poweroff() { command -v loginctl >/dev/null 2>&1 && loginctl poweroff || sudo halt; }
+_reboot()   { command -v loginctl >/dev/null 2>&1 && loginctl reboot   || sudo reboot; }
+_suspend()  { command -v loginctl >/dev/null 2>&1 && loginctl suspend  || sudo zzz; }
 
+case "$SELECTION" in
+    Shutdown) _poweroff ;;
+    Reboot)   _reboot ;;
+    Logout)   niri msg action quit ;;
+    Suspend)  _suspend ;;
 esac
