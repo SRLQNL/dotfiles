@@ -95,6 +95,10 @@ if [[ "$exec_cmd" == *"flatpak run"* ]]; then
         bash -c "$modified" &>/dev/null &
     fi
 elif [[ "$is_term" == "true" ]]; then
+    if ! command -v proxychains4 &>/dev/null; then
+        notify "proxychains4 not installed; install via: xbps-install proxychains-ng"
+        exit 1
+    fi
     $TERM_EMU sh -c "proxychains4 -q $exec_cmd" &
 elif is_chromium "$exec_cmd"; then
     # Native Chromium/Electron: --proxy-server overrides system settings reliably

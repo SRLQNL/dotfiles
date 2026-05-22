@@ -2,12 +2,12 @@
 # ── volume.sh ─────────────────────────────────────────────
 # Description: Shows current audio volume with ASCII bar + tooltip
 # Usage: Waybar `custom/volume` every 1s
-# Dependencies: wpctl, awk, bc, seq, printf
+# Dependencies: wpctl, awk, seq, printf
 # ───────────────────────────────────────────────────────────
 
 # Get raw volume and convert to int
 vol_raw=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{ print $2 }')
-vol_int=$(echo "$vol_raw * 100" | bc | awk '{ print int($1) }')
+vol_int=$(awk "BEGIN { printf \"%d\", $vol_raw * 100 }")
 
 # Check mute status
 is_muted=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED && echo true || echo false)

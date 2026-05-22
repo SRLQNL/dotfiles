@@ -18,6 +18,11 @@ clipboard_menu() {
     thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
     mkdir -p "$thumbnail_dir"
 
+    if ! command -v gawk >/dev/null 2>&1; then
+        notify-send "fuzzel-menu" "gawk required for clipboard thumbnails; install via: xbps-install gawk" 2>/dev/null || true
+        return 0
+    fi
+
     cliphist_list=$(cliphist list)
     if [ -z "$cliphist_list" ]; then
         return 0
