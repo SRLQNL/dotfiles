@@ -3,6 +3,8 @@
 Portable dotfiles for Void Linux + niri Wayland desktop.
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
+Russian version: [README.ru.md](README.ru.md).
+
 ## Install On A New Void Machine
 
 After the Void installer finishes:
