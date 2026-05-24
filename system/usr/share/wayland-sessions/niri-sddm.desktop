@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Niri (SDDM wrapper)
+Comment=A scrollable-tiling Wayland compositor with session environment
+Exec=/usr/local/bin/niri-sddm-session
+Type=Application
+DesktopNames=niri

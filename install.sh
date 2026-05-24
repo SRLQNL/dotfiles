@@ -57,6 +57,22 @@ hostname_key_default() {
     printf '%s\n' "${host:-unknown}"
 }
 
+host_key_from_existing_link() {
+    existing_host_env="$HOME/.config/host.env"
+    [ -e "$existing_host_env" ] || return 1
+
+    existing_host_env_real=$(readlink -f -- "$existing_host_env" 2>/dev/null || true)
+    case "$existing_host_env_real" in
+        "$DOTFILES_DIR"/hosts/*/host.env)
+            existing_host_dir=${existing_host_env_real%/host.env}
+            basename -- "$existing_host_dir"
+            return 0
+            ;;
+    esac
+
+    return 1
+}
+
 append_words() {
     current=$1
     shift
@@ -679,18 +695,18 @@ apply_niri_sddm_session() {
     [ "${INSTALL_NIRI_SDDM:-1}" = "1" ] || return 0
     info "=== niri SDDM session ==="
     src_bin="$DOTFILES_DIR/system/usr/local/bin/niri-sddm-session"
-    src_desktop="$DOTFILES_DIR/system/usr/share/wayland-sessions/niri.desktop"
+    src_desktop="$DOTFILES_DIR/system/usr/share/wayland-sessions/niri-sddm.desktop"
 
     if [ "$DRY_RUN" = "1" ]; then
         info "[dry-run] would install /usr/local/bin/niri-sddm-session"
-        info "[dry-run] would install /usr/share/wayland-sessions/niri.desktop"
+        info "[dry-run] would install /usr/share/wayland-sessions/niri-sddm.desktop"
         return 0
     fi
 
     confirm "Install niri SDDM session script and .desktop? (requires root)" || return 0
     dry_root install -m 755 "$src_bin" /usr/local/bin/niri-sddm-session
     dry_root install -d -m 755 /usr/share/wayland-sessions
-    dry_root install -m 644 "$src_desktop" /usr/share/wayland-sessions/niri.desktop
+    dry_root install -m 644 "$src_desktop" /usr/share/wayland-sessions/niri-sddm.desktop
 }
 
 # ============================================================
@@ -864,6 +880,9 @@ run_validations() {
 
             src_real=$(readlink -f -- "$src" 2>/dev/null || true)
             target_real=$(readlink -f -- "$target" 2>/dev/null || true)
+            case "$target_real" in
+                "$DOTFILES_DIR"/*) continue ;;
+            esac
             if [ -n "$src_real" ] && [ "$src_real" != "$target_real" ]; then
                 printf 'stow target points elsewhere: %s -> %s\n' "$target" "$(readlink -- "$target")"
             fi
@@ -905,6 +924,13 @@ main() {
         HOSTNAME_KEY="$OPT_HOST"
     else
         HOSTNAME_KEY=$(hostname_key_default)
+        if [ ! -f "$DOTFILES_DIR/hosts/$HOSTNAME_KEY/host.env" ]; then
+            existing_host_key=$(host_key_from_existing_link || true)
+            if [ -n "$existing_host_key" ] && [ -f "$DOTFILES_DIR/hosts/$existing_host_key/host.env" ]; then
+                warn "no host config for hostname '$HOSTNAME_KEY'; using existing ~/.config/host.env host '$existing_host_key'"
+                HOSTNAME_KEY="$existing_host_key"
+            fi
+        fi
     fi
     info "hostname: $HOSTNAME_KEY"
 
@@ -1002,8 +1028,12 @@ main() {
     fi
 
     if [ "$INSTALL_STEAM" = "1" ]; then
-        info "Running Steam Homebrew setup..."
-        sh "$DOTFILES_DIR/scripts/install-steam-homebrew.sh"
+        if [ "$DRY_RUN" = "1" ]; then
+            info "[dry-run] would run: scripts/install-steam-homebrew.sh"
+        else
+            info "Running Steam Homebrew setup..."
+            sh "$DOTFILES_DIR/scripts/install-steam-homebrew.sh"
+        fi
     fi
 
     # 3. Host overlay (niri outputs, session env)
