@@ -5,6 +5,7 @@
 git
 stow
 curl
+ca-certificates
 jq
 gettext
 bc
@@ -16,6 +17,9 @@ psmisc
 linux
 
 # niri Wayland desktop
+dbus
+elogind
+polkit
 niri
 xwayland-satellite
 xdg-desktop-portal
@@ -56,7 +60,6 @@ lm_sensors
 # UI / apps
 Thunar
 viewnior
-vscode
 blueman
 pavucontrol
 pipewire

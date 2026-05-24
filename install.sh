@@ -6,6 +6,9 @@
 #
 # Options:
 #   --dry-run           Show what would be done without making changes
+#   --bootstrap         First-run mode: create a host config if missing
+#   --auto-hardware     Auto-enable detected hardware profiles (NVIDIA/laptop)
+#   --no-host-create    Do not create hosts/<hostname>/host.env automatically
 #   --host HOSTNAME     Override hostname for host config (default: /etc/hostname basename)
 #   --profiles LIST     Additional profiles to load (quoted, repeated, or space-separated)
 #   --skip-packages     Skip xbps package installation
@@ -16,19 +19,18 @@
 # Profiles available: desktop-nvidia  laptop  steam  grub-themed  power-profile
 #
 # Quick start for a new Void machine:
-#   git clone <repo> ~/dotfiles && cd ~/dotfiles
-#   HOST=$(hostname 2>/dev/null | cut -d. -f1)
-#   [ -n "$HOST" ] || HOST=unknown
-#   mkdir -p "hosts/$HOST"
-#   cp hosts/example/host.env "hosts/$HOST/host.env"
-#   # edit "hosts/$HOST/host.env" for your hardware
-#   ./install.sh
+#   sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)"
+# or:
+#   git clone <repo> ~/dotfiles && cd ~/dotfiles && ./install.sh --bootstrap --yes
 
 set -eu
 
 DOTFILES_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 LOG_FILE="${LOG_FILE:-/tmp/dotfiles-install.log}"
 DRY_RUN=0
+BOOTSTRAP=0
+AUTO_HARDWARE=0
+NO_HOST_CREATE=0
 OPT_HOST=""
 OPT_PROFILES=""
 SKIP_PACKAGES=0
@@ -99,6 +101,9 @@ unique_words() {
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run)      DRY_RUN=1 ;;
+        --bootstrap)    BOOTSTRAP=1; AUTO_HARDWARE=1; YES=1 ;;
+        --auto-hardware) AUTO_HARDWARE=1 ;;
+        --no-host-create) NO_HOST_CREATE=1 ;;
         --host)
             shift
             [ $# -gt 0 ] || { printf 'Option --host requires a hostname\n' >&2; exit 1; }
@@ -241,7 +246,26 @@ confirm() {
 # ============================================================
 
 detect_gpu() {
-    if lspci 2>/dev/null | grep -qi nvidia; then
+    has_nvidia=0
+    has_amd=0
+    has_intel=0
+
+    for vendor in /sys/class/drm/card*/device/vendor; do
+        [ -r "$vendor" ] || continue
+        case "$(cat "$vendor")" in
+            0x10de) has_nvidia=1 ;;
+            0x1002) has_amd=1 ;;
+            0x8086) has_intel=1 ;;
+        esac
+    done
+
+    if [ "$has_nvidia" = "1" ]; then
+        echo "nvidia"
+    elif [ "$has_amd" = "1" ]; then
+        echo "amd"
+    elif [ "$has_intel" = "1" ]; then
+        echo "intel"
+    elif lspci 2>/dev/null | grep -qi nvidia; then
         echo "nvidia"
     elif lspci 2>/dev/null | grep -qi "amd\|radeon"; then
         echo "amd"
@@ -287,11 +311,38 @@ detect_steam() {
     fi
 }
 
+detect_musl() {
+    if ldd --version 2>&1 | grep -qi musl || ls /lib/ld-musl-*.so.1 >/dev/null 2>&1; then
+        echo "yes"
+    else
+        echo "no"
+    fi
+}
+
+detect_auto_profiles() {
+    auto_profiles=""
+
+    if [ "$(detect_battery)" = "yes" ]; then
+        auto_profiles=$(append_words "$auto_profiles" laptop)
+    fi
+
+    if [ "$AUTO_HARDWARE" = "1" ] && [ "$(detect_gpu)" = "nvidia" ]; then
+        if [ "$(uname -m)" = "x86_64" ] && [ "$(detect_musl)" = "no" ]; then
+            auto_profiles=$(append_words "$auto_profiles" desktop-nvidia)
+        else
+            warn "NVIDIA detected, but automatic desktop-nvidia profile is skipped outside x86_64 glibc"
+        fi
+    fi
+
+    printf '%s\n' "$auto_profiles"
+}
+
 print_hardware_info() {
     info "=== Hardware detection ==="
     info "  GPU:      $(detect_gpu)"
     info "  Battery:  $(detect_battery)"
     info "  GRUB:     $(detect_grub)"
+    info "  musl:     $(detect_musl)"
     info "  Monitors: $(detect_monitors | tr '\n' ' ')"
     info "=========================="
 }
@@ -311,6 +362,8 @@ INSTALL_NVIDIA_WAYLAND_ENV=0
 INSTALL_GRUB_THEME=0
 INSTALL_NIRI_SDDM=1
 INSTALL_STEAM=0
+INSTALL_NFTABLES_CONFIG=0
+INSTALL_SSH_HARDENING=0
 GRUB_EXTRA_CMDLINE=""
 GRUB_GFXMODE="auto"
 GPU_POWER_LIMIT=""
@@ -349,6 +402,90 @@ build_package_file_list() {
     for pfile in ${INSTALL_PACKAGES_EXTRA:-}; do
         add_package_file "$pfile"
     done
+}
+
+set_generated_host_defaults() {
+    generated_profiles=$1
+
+    PROFILES=${PROFILES:-$generated_profiles}
+    NIRI_PRIMARY_OUTPUT=${NIRI_PRIMARY_OUTPUT:-}
+    NIRI_SECONDARY_OUTPUT=${NIRI_SECONDARY_OUTPUT:-}
+    NIRI_PRIMARY_MODE=${NIRI_PRIMARY_MODE:-}
+    NIRI_SECONDARY_MODE=${NIRI_SECONDARY_MODE:-}
+    NIRI_PRIMARY_POSITION=${NIRI_PRIMARY_POSITION:-0,0}
+    NIRI_SECONDARY_POSITION=${NIRI_SECONDARY_POSITION:-}
+    LOCK_TOP_OUTPUT=${LOCK_TOP_OUTPUT:-}
+    LOCK_BOTTOM_OUTPUT=${LOCK_BOTTOM_OUTPUT:-}
+    GPU_POWER_LIMIT=${GPU_POWER_LIMIT:-}
+    INSTALL_USB_INPUT_POWER_FIX=${INSTALL_USB_INPUT_POWER_FIX:-0}
+    GRUB_GFXMODE=${GRUB_GFXMODE:-auto}
+    GRUB_EXTRA_CMDLINE=${GRUB_EXTRA_CMDLINE:-}
+    CPU_GOVERNOR=${CPU_GOVERNOR:-powersave}
+    CPU_EPP=${CPU_EPP:-balance_power}
+    STEAM_DATA_DIR=${STEAM_DATA_DIR:-$HOME/.local/share/Steam}
+    STEAM_LIBRARY_DIR=${STEAM_LIBRARY_DIR:-$HOME/.local/share/Steam/SteamLibrary}
+    SCREENSHOT_DIR=${SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}
+    PROXY_SV_NAME=${PROXY_SV_NAME:-}
+    PROXY_SOCKS5=${PROXY_SOCKS5:-127.0.0.1:1080}
+    INSTALL_NIRI_SDDM=${INSTALL_NIRI_SDDM:-1}
+    INSTALL_NFTABLES_CONFIG=${INSTALL_NFTABLES_CONFIG:-0}
+    INSTALL_SSH_HARDENING=${INSTALL_SSH_HARDENING:-0}
+}
+
+create_host_env() {
+    hostname_key=$1
+    generated_profiles=$2
+    host_dir="$DOTFILES_DIR/hosts/$hostname_key"
+    host_env="$host_dir/host.env"
+
+    set_generated_host_defaults "$generated_profiles"
+
+    if [ "$DRY_RUN" = "1" ]; then
+        info "[dry-run] would create generated host config: $host_env"
+        return 0
+    fi
+
+    mkdir -p "$host_dir"
+    cat > "$host_env" <<EOF
+# Generated by install.sh on $(date '+%F %T')
+# This file is intentionally conservative. Add profiles such as steam,
+# grub-themed, rgb, or power-profile when this host needs them.
+
+PROFILES="$PROFILES"
+
+# niri output config. Leave names empty until you can run: niri msg outputs
+NIRI_PRIMARY_OUTPUT="$NIRI_PRIMARY_OUTPUT"
+NIRI_SECONDARY_OUTPUT="$NIRI_SECONDARY_OUTPUT"
+NIRI_PRIMARY_MODE="$NIRI_PRIMARY_MODE"
+NIRI_SECONDARY_MODE="$NIRI_SECONDARY_MODE"
+NIRI_PRIMARY_POSITION="$NIRI_PRIMARY_POSITION"
+NIRI_SECONDARY_POSITION="$NIRI_SECONDARY_POSITION"
+
+LOCK_TOP_OUTPUT="$LOCK_TOP_OUTPUT"
+LOCK_BOTTOM_OUTPUT="$LOCK_BOTTOM_OUTPUT"
+
+GPU_POWER_LIMIT="$GPU_POWER_LIMIT"
+INSTALL_USB_INPUT_POWER_FIX=$INSTALL_USB_INPUT_POWER_FIX
+
+GRUB_GFXMODE="$GRUB_GFXMODE"
+GRUB_EXTRA_CMDLINE="$GRUB_EXTRA_CMDLINE"
+
+CPU_GOVERNOR="$CPU_GOVERNOR"
+CPU_EPP="$CPU_EPP"
+
+STEAM_DATA_DIR="$STEAM_DATA_DIR"
+STEAM_LIBRARY_DIR="$STEAM_LIBRARY_DIR"
+
+SCREENSHOT_DIR="$SCREENSHOT_DIR"
+
+PROXY_SV_NAME="$PROXY_SV_NAME"
+PROXY_SOCKS5="$PROXY_SOCKS5"
+
+INSTALL_NIRI_SDDM=$INSTALL_NIRI_SDDM
+INSTALL_NFTABLES_CONFIG=$INSTALL_NFTABLES_CONFIG
+INSTALL_SSH_HARDENING=$INSTALL_SSH_HARDENING
+EOF
+    info "generated host config: $host_env"
 }
 
 system_configuration_needs_root() {
@@ -518,9 +655,12 @@ apply_host_overlay() {
         fi
     done
 
-    # Host etc/ overlay — install root-owned config files from hosts/$HOSTNAME/etc/
-    # into /etc/, substituting $INSTALL_USER placeholder for the actual username.
-    apply_host_etc "$hostname_key"
+    # Host etc/ overlay is system-level and must honor --skip-system.
+    if [ "$SKIP_SYSTEM" = "0" ]; then
+        apply_host_etc "$hostname_key"
+    else
+        info "skip host /etc overlay (--skip-system)"
+    fi
 }
 
 apply_system_etc() {
@@ -541,6 +681,24 @@ apply_system_etc() {
             runit/1|runit/2)
                 info "  skip (boot-critical, apply manually if needed): $dst"
                 continue ;;
+        esac
+
+        case "$rel" in
+            nftables.conf)
+                if [ "${INSTALL_NFTABLES_CONFIG:-0}" != "1" ]; then
+                    info "  skip (nftables config is opt-in): $dst"
+                    continue
+                fi ;;
+            ssh/sshd_config.d/*)
+                if [ "${INSTALL_SSH_HARDENING:-0}" != "1" ]; then
+                    info "  skip (SSH hardening is opt-in): $dst"
+                    continue
+                fi ;;
+            sv/power-profile/*)
+                if [ "${INSTALL_POWER_PROFILE:-0}" != "1" ]; then
+                    info "  skip (no power-profile): $dst"
+                    continue
+                fi ;;
         esac
 
         # NVIDIA application profile — only install when NVIDIA is selected
@@ -912,6 +1070,9 @@ run_validations() {
 
 main() {
     [ -x /usr/bin/xbps-install ] || die "this script requires Void Linux (xbps not found)"
+    if [ "$(id -u)" -eq 0 ] && [ "${DOTFILES_ALLOW_ROOT:-0}" != "1" ]; then
+        die "do not run install.sh as root; run it as the target user with sudo/doas available"
+    fi
 
     info "========================================"
     info "dotfiles install — $(date '+%F %T')"
@@ -953,11 +1114,28 @@ main() {
             ln -sf "$host_env" "$HOME/.config/host.env"
         fi
     else
+        generated_profiles=$(detect_auto_profiles)
         warn "no host config found at hosts/$HOSTNAME_KEY/host.env"
-        warn "copy hosts/example/host.env to hosts/$HOSTNAME_KEY/host.env and edit it"
-        if ! confirm "Continue with base profile only?"; then
-            info "Aborted. Create hosts/$HOSTNAME_KEY/host.env first."
-            exit 1
+        if [ "$NO_HOST_CREATE" = "1" ]; then
+            die "host config creation disabled; create hosts/$HOSTNAME_KEY/host.env first"
+        fi
+        if [ "$BOOTSTRAP" = "1" ] || [ "$YES" = "1" ] || confirm "Create generated host config for '$HOSTNAME_KEY'?"; then
+            create_host_env "$HOSTNAME_KEY" "$generated_profiles"
+            if [ -f "$host_env" ]; then
+                info "loading generated host config: $host_env"
+                # shellcheck source=/dev/null
+                . "$host_env"
+            else
+                set_generated_host_defaults "$generated_profiles"
+            fi
+            if [ "$DRY_RUN" = "1" ]; then
+                info "[dry-run] would run: ln -sf $host_env $HOME/.config/host.env"
+            else
+                mkdir -p "$HOME/.config"
+                ln -sf "$host_env" "$HOME/.config/host.env"
+            fi
+        else
+            die "Create hosts/$HOSTNAME_KEY/host.env first or rerun with --bootstrap"
         fi
     fi
 

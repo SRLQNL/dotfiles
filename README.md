@@ -3,29 +3,45 @@
 Portable dotfiles for Void Linux + niri Wayland desktop.
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
-## Quick start (new Void machine)
+## One-command install (new Void machine)
+
+After the Void installer finishes, boot into the new system and log in as your
+normal user. The user needs working `sudo` or `doas` for system package/service
+changes.
 
 ```sh
-# 1. Clone
-# Use sudo or doas for root commands; install.sh auto-detects either helper.
-sudo xbps-install -S git
-git clone <repo-url> ~/dotfiles
-cd ~/dotfiles
-
-# 2. Create host config (see hosts/example/host.env)
-HOST=$(hostname 2>/dev/null | cut -d. -f1)
-[ -n "$HOST" ] || HOST=unknown
-mkdir -p "hosts/$HOST"
-cp hosts/example/host.env "hosts/$HOST/host.env"
-$EDITOR "hosts/$HOST/host.env"   # set monitor names, profiles, etc.
-
-# 3. Bootstrap
-./install.sh --yes
+sudo xbps-install -Sy curl ca-certificates && sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)"
 ```
 
-Preview without making changes:
+Run this as your normal user, not root. The bootstrap script installs `git` if
+needed, clones this repository to `~/dotfiles`, creates `hosts/<hostname>/host.env`
+when missing, installs the Void+niri desktop package set, applies stow, and enables
+the base runit services for a graphical niri login.
+
+Then reboot:
 ```sh
-./install.sh --dry-run
+sudo reboot
+```
+
+On the login screen choose `Niri (SDDM wrapper)` if SDDM does not select it
+automatically.
+
+Pass extra profiles when the new host needs them:
+```sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)" -- --profiles "steam grub-themed"
+```
+
+Preview a local checkout without making changes:
+```sh
+./install.sh --bootstrap --dry-run
+```
+
+Manual clone path:
+```sh
+sudo xbps-install -Sy git ca-certificates
+git clone https://github.com/SRLQNL/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install.sh --bootstrap
 ```
 
 ---
