@@ -3,22 +3,21 @@
 Portable dotfiles for Void Linux + niri Wayland desktop.
 Managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
-## One-command install (new Void machine)
+## Install On A New Void Machine
 
-After the Void installer finishes, boot into the new system and log in as your
-normal user. The user needs working `sudo` or `doas` for system package/service
-changes.
+After the Void installer finishes:
+
+1. Boot into the installed system.
+2. Log in as your normal user, not as `root`.
+3. Make sure that user can run root commands with `sudo` or `doas`.
+4. Run the one-line bootstrap.
 
 ```sh
 sudo xbps-install -Sy curl ca-certificates && sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)"
 ```
 
-Run this as your normal user, not root. The bootstrap script installs `git` if
-needed, clones this repository to `~/dotfiles`, creates `hosts/<hostname>/host.env`
-when missing, installs the Void+niri desktop package set, applies stow, and enables
-the base runit services for a graphical niri login.
+Then reboot.
 
-Then reboot:
 ```sh
 sudo reboot
 ```
@@ -26,20 +25,88 @@ sudo reboot
 On the login screen choose `Niri (SDDM wrapper)` if SDDM does not select it
 automatically.
 
-Pass extra profiles when the new host needs them:
+### What the command does
+
+The bootstrap script:
+
+- checks that the system is Void Linux;
+- installs `git`, `curl`, and `ca-certificates` if needed;
+- clones or updates this repository at `~/dotfiles`;
+- runs `./install.sh --bootstrap`;
+- creates `hosts/<hostname>/host.env` automatically when it does not exist;
+- installs the base Void+niri desktop package set;
+- applies stow-managed home config;
+- installs the niri SDDM wrapper session;
+- enables the base runit services needed for a graphical login:
+  `dbus`, `elogind`, `NetworkManager`, `polkitd`, and `sddm`.
+
+The default bootstrap does not silently enable Steam, RGB, GRUB theming, USB quirks,
+custom nftables rules, or SSH hardening. Those are host/profile choices.
+
+### Requirements
+
+- Run the command as the target desktop user.
+- Do not run it with `sudo sh ...` or as direct `root`.
+- The user must already be allowed to use `sudo` or `doas`.
+
+If your fresh Void install does not have `sudo` or `doas`, configure one first as
+root. Example for `sudo`:
+
+```sh
+su -
+xbps-install -Sy sudo
+usermod -aG wheel YOUR_USER
+EDITOR=nano visudo
+```
+
+In `visudo`, allow the `wheel` group, then log out and back in as `YOUR_USER`.
+
+### Optional Profiles
+
+Pass extra profiles when the new host needs them.
+
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)" -- --profiles "steam grub-themed"
 ```
 
+On x86_64 glibc machines with NVIDIA hardware, `--bootstrap` auto-selects the
+`desktop-nvidia` profile so niri/Wayland has the required driver stack. Laptop
+hardware auto-selects the `laptop` profile. Steam, RGB, and GRUB theme remain
+explicit.
+
 Preview a local checkout without making changes:
+
 ```sh
 ./install.sh --bootstrap --dry-run
 ```
 
 Manual clone path:
+
 ```sh
 sudo xbps-install -Sy git ca-certificates
 git clone https://github.com/SRLQNL/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+./install.sh --bootstrap
+```
+
+### After First Login
+
+After the first successful niri login, check monitor names:
+
+```sh
+niri msg outputs
+```
+
+Then edit the generated host config if this machine needs monitor layout,
+Steam paths, GRUB theme, RGB, proxy, firewall, or SSH policy:
+
+```sh
+$EDITOR ~/dotfiles/hosts/$(hostname | cut -d. -f1)/host.env
+```
+
+Re-run the installer after edits:
+
+```sh
 cd ~/dotfiles
 ./install.sh --bootstrap
 ```
@@ -83,7 +150,8 @@ dotfiles/
 
 ## Profiles
 
-Profiles are composable. Set them in `hosts/<hostname>/host.env`:
+Profiles are composable. `base` is always loaded and is the mandatory niri
+desktop stack. Optional profiles live in `hosts/<hostname>/host.env`:
 
 ```sh
 PROFILES="desktop-nvidia steam grub-themed power-profile"
@@ -98,12 +166,28 @@ Or pass on the command line:
 
 | Profile | What it does |
 |---------|-------------|
-| `base` | Always applied: default package file, stow packages, oh-my-zsh |
+| `base` | Always applied: Void+niri desktop packages, stow packages, oh-my-zsh |
 | `desktop-nvidia` | `nvidia-drm.modeset=1`, 32-bit libs, power management |
 | `laptop` | Battery tools, power-saving CPU defaults |
 | `steam` | Steam + gaming packages, configurable data paths |
 | `grub-themed` | MilkGrub theme, GRUB display mode |
 | `power-profile` | custom runit service for CPU governor and GPU power cap |
+| `rgb` | OpenRGB package and host-selected RGB service |
+
+Automatic selection during `--bootstrap`:
+
+- `laptop` is selected when a battery is detected.
+- `desktop-nvidia` is selected on NVIDIA `x86_64` glibc systems.
+- `steam`, `rgb`, and `grub-themed` are never selected automatically.
+
+Network/security toggles are not profiles, but host variables:
+
+```sh
+INSTALL_NFTABLES_CONFIG=1
+INSTALL_SSH_HARDENING=1
+```
+
+Leave them unset or `0` on a generic new machine.
 
 Package files are accumulated in `INSTALL_PACKAGES_FILE`. `profiles/base.env`
 sets the default to `packages/void-base.txt`; feature profiles append their own
@@ -122,34 +206,40 @@ profiles and hosts should use `INSTALL_PACKAGES_FILE`.
 
 ---
 
-## Adding a new host
+## Host Config
+
+`./install.sh --bootstrap` creates this file automatically:
 
 ```sh
-# 1. Copy example host config
-HOST=$(hostname 2>/dev/null | cut -d. -f1)
-[ -n "$HOST" ] || HOST=unknown
-mkdir -p "hosts/$HOST"
-cp hosts/example/host.env "hosts/$HOST/host.env"
-
-# 2. Find monitor names (inside a running niri session)
-niri msg outputs
-
-# 3. Edit the host config with your monitor names, profiles, paths
-$EDITOR "hosts/$HOST/host.env"
-
-# 4. (Optional) add a niri outputs config for this host
-cp hosts/desktop-srl/niri-outputs.kdl "hosts/$HOST/niri-outputs.kdl"
-# Edit output names and modes — bootstrap will install it to ~/.config/niri/outputs-host.kdl
-
-# 5. Run bootstrap
-./install.sh --host "$HOST" --yes
+hosts/<hostname>/host.env
 ```
+
+It is intentionally conservative. Edit it after first login when you know the
+machine-specific values:
+
+```sh
+cd ~/dotfiles
+$EDITOR "hosts/$(hostname | cut -d. -f1)/host.env"
+```
+
+Use `hosts/example/host.env` as the full reference template.
+
+Monitor output layout is optional. If you need a fixed niri layout, create:
+
+```sh
+hosts/<hostname>/niri-outputs.kdl
+```
+
+The installer copies that file to `~/.config/niri/outputs-host.kdl`.
 
 ---
 
 ## Manual component installation
 
 ```sh
+# Local full bootstrap from an existing checkout
+./install.sh --bootstrap
+
 # Apply stow only (skip packages and system)
 ./install.sh --skip-packages --skip-system
 
@@ -179,6 +269,19 @@ RUNIT_QUIET_FORCE=1 scripts/install-runit-quiet-boot.sh
 # Sync live system back into repo
 scripts/snapshot.sh && git -C ~/dotfiles status
 ```
+
+Useful flags:
+
+| Flag | Meaning |
+|------|---------|
+| `--bootstrap` | First-run mode; creates missing `hosts/<hostname>/host.env` |
+| `--dry-run` | Print the plan without changing files or packages |
+| `--host NAME` | Use `hosts/NAME/host.env` instead of the system hostname |
+| `--profiles "..."` | Add optional profiles for this run |
+| `--skip-packages` | Do not run `xbps-install` |
+| `--skip-stow` | Do not apply home symlinks |
+| `--skip-system` | Do not install `/etc`, runit, SDDM, GRUB, or service changes |
+| `--no-host-create` | Fail if host config is missing |
 
 ---
 
@@ -268,10 +371,16 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 ```sh
 # Full validation (dry-run, no changes)
-./install.sh --dry-run --skip-packages --skip-stow --skip-system
+./install.sh --bootstrap --dry-run --skip-packages --skip-system
 
 # Individual checks
 niri validate --config ~/.config/niri/config.kdl
 fuzzel --check-config
-sh -n scripts/bootstrap.sh
+sh -n bootstrap.sh scripts/bootstrap.sh
+```
+
+Remote bootstrap dry-run test:
+
+```sh
+DOTFILES_DIR=/tmp/dotfiles-test sh -c "$(curl -fsSL https://raw.githubusercontent.com/SRLQNL/dotfiles/main/bootstrap.sh)" -- --dry-run --skip-packages --skip-system --host test-host
 ```
